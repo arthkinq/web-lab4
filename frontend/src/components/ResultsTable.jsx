@@ -8,18 +8,15 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-// --- ФУНКЦИЯ ФОРМАТИРОВАНИЯ ДАТЫ ---
 const formatDate = (dateData) => {
     if (!dateData) return "—";
 
-    // Если Java прислала массив [год, месяц, день, часы, минуты, секунды, нано]
     if (Array.isArray(dateData)) {
         const [year, month, day, hour, minute, second] = dateData;
-        // Важно: в JS месяцы считаются с 0 (январь=0), а в Java с 1. Поэтому "month - 1".
         return new Date(year, month - 1, day, hour, minute, second).toLocaleString();
     }
 
-    // Если пришла строка ISO
+
     return new Date(dateData).toLocaleString();
 };
 
@@ -78,7 +75,7 @@ const ResultsTable = () => {
                                         {row.hit ? 'Попал' : 'Мимо'}
                                     </TableCell>
 
-                                    {/* ИСПОЛЬЗУЕМ НАШУ ФУНКЦИЮ ЗДЕСЬ */}
+
                                     <TableCell>{formatDate(row.timestamp)}</TableCell>
 
                                     <TableCell>{(row.executionTime / 1000000).toFixed(3)} ms</TableCell>

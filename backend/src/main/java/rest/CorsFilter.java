@@ -13,17 +13,14 @@ public class CorsFilter implements ContainerResponseFilter {
     public void filter(ContainerRequestContext requestContext, 
                        ContainerResponseContext responseContext) throws IOException {
         
-        // Разрешаем запросы с любого источника (для разработки)
-        // В проде лучше указывать конкретный адрес: "http://localhost:5173"
+
         responseContext.getHeaders().add(
             "Access-Control-Allow-Origin", "*");
             
-        // Разрешаем заголовки (особенно Authorization для токена и Content-Type для JSON)
         responseContext.getHeaders().add(
             "Access-Control-Allow-Headers",
             "origin, content-type, accept, authorization");
             
-        // Разрешаем методы
         responseContext.getHeaders().add(
             "Access-Control-Allow-Methods",
             "GET, POST, PUT, DELETE, OPTIONS, HEAD");

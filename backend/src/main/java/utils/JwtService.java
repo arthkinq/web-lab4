@@ -12,11 +12,11 @@ import java.util.Date;
 
 @ApplicationScoped
 public class JwtService {
-    // ВАЖНО: Ключ должен быть длинным (минимум 256 бит / 32 символа)
+
     private static final String SECRET_STRING = "my_super_secret_key_for_weblab4_very_long_secure_string";
     private static final Key KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
 
-    private static final long EXPIRATION_TIME = 30 * 60 * 1000; // 30 минут
+    private static final long EXPIRATION_TIME = 30 * 60 * 1000;
 
     public String generateToken(String username) {
         return Jwts.builder()

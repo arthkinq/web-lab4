@@ -21,10 +21,9 @@ public class UserService {
                 .getResultList();
 
         if (!existing.isEmpty()) {
-            return false; // Пользователь уже есть
+            return false;
         }
 
-        // Хэшируем пароль и сохраняем
         String hash = PasswordHasher.hash(password);
         User user = new User(username, hash);
         em.persist(user);
@@ -32,7 +31,7 @@ public class UserService {
     }
 
     public User findUser(String username, String password) {
-        // Ищем пользователя по имени
+
         List<User> users = em.createQuery("SELECT u FROM User u WHERE u.username = :name", User.class)
                 .setParameter("name", username)
                 .getResultList();
@@ -40,7 +39,7 @@ public class UserService {
         if (users.isEmpty()) return null;
 
         User user = users.get(0);
-        // Проверяем пароль (сравниваем хэши)
+
         String inputHash = PasswordHasher.hash(password);
 
         if (user.getPassword().equals(inputHash)) {

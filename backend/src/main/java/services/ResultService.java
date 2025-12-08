@@ -15,7 +15,7 @@ public class ResultService {
     @PersistenceContext(unitName = "lab4Unit")
     private EntityManager em;
 
-    @EJB // Внедряем другой EJB
+    @EJB
     private AreaCheckService areaCheckService;
 
     public Result addResult(double x, double y, double r, User user) {

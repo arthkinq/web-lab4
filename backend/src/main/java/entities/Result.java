@@ -19,14 +19,13 @@ public class Result implements Serializable {
     private LocalDateTime timestamp;
     private long executionTime;
 
-    // Связь с таблицей пользователей
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public Result() {}
 
-    // Конструктор для удобства
+
     public Result(double x, double y, double r, boolean hit, long executionTime, User user) {
         this.x = x;
         this.y = y;
@@ -37,7 +36,6 @@ public class Result implements Serializable {
         this.user = user;
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

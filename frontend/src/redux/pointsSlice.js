@@ -1,7 +1,6 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import api from '../api/axiosConfig';
 
-// Асинхронное действие: Получить точки
 export const fetchPoints = createAsyncThunk(
     'points/fetchPoints',
     async (_, {rejectWithValue}) => {
@@ -14,7 +13,6 @@ export const fetchPoints = createAsyncThunk(
     }
 );
 
-// Асинхронное действие: Добавить точку
 export const addPoint = createAsyncThunk(
     'points/addPoint',
     async (pointData, {rejectWithValue}) => {
@@ -31,7 +29,6 @@ export const clearTable = createAsyncThunk(
     'points/clearTable',
     async (_, { rejectWithValue }) => {
         try {
-            // Отправляем DELETE запрос на сервер
             await api.delete('/points');
             return; // Успех
         } catch (error) {
@@ -46,14 +43,14 @@ const pointsSlice = createSlice({
         status: 'idle',
         error: null,
         currentR: 1,
-        rError: '' // <--- НОВОЕ ПОЛЕ: для хранения ошибки R извне
+        rError: ''
     },
     reducers: {
         setR: (state, action) => {
             state.currentR = action.payload;
-            state.rError = ''; // Если R изменили успешно, убираем ошибку
+            state.rError = '';
         },
-        setRError: (state, action) => { // <--- НОВЫЙ ЭКШН
+        setRError: (state, action) => {
             state.rError = action.payload;
         },
         clearLocalPoints: (state) => {
@@ -63,18 +60,18 @@ const pointsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Загрузка
+
             .addCase(fetchPoints.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.items = action.payload;
             })
-            // Добавление
+
             .addCase(addPoint.fulfilled, (state, action) => {
-                // Добавляем новую точку в начало списка
+
                 state.items.unshift(action.payload);
             })
             .addCase(clearTable.fulfilled, (state) => {
-                state.items = []; // Очищаем массив в Redux после ответа сервера
+                state.items = [];
             });
     }
 });

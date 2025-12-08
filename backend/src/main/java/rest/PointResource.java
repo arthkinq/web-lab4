@@ -23,12 +23,11 @@ public class PointResource {
     private ResultService resultService;
 
     @EJB
-    private UserService userService; // Нам нужен метод поиска по имени (добавим его ниже!)
+    private UserService userService;
 
     @Inject
     private JwtService jwtService;
 
-    // Вспомогательный метод для проверки токена
     private User getUserFromToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
@@ -36,11 +35,7 @@ public class PointResource {
         String token = authHeader.substring(7);
         String username = jwtService.validateTokenAndGetUsername(token);
         if (username == null) return null;
-        
-        // Нам нужен метод findByUsername в UserService, давай его добавим позже
-        // Пока используем хак - ищем через findUser с "фиктивным" паролем? Нет, лучше добавить метод.
-        // Давай добавим метод в UserService прямо сейчас.
-        // Предположим, он там есть: userService.findByUsername(username)
+
         return userService.findUserByUsername(username); 
     }
 

@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addPoint, setR, setRError } from '../redux/pointsSlice'; // Добавили setRError
+import { addPoint, setR, setRError } from '../redux/pointsSlice';
 import { Paper, Typography, TextField, Button, ToggleButton, ToggleButtonGroup, Box } from '@mui/material';
 
 const PointForm = () => {
     const dispatch = useDispatch();
     const currentR = useSelector((state) => state.points.currentR);
-    // Подписываемся на глобальную ошибку
     const globalRError = useSelector((state) => state.points.rError);
 
     const [x, setX] = useState(0);
     const [y, setY] = useState('');
     const [rLocal, setRLocal] = useState(currentR);
 
-    // Локальные ошибки (например для Y)
     const [localErrors, setLocalErrors] = useState({ y: '', r: '' });
 
     useEffect(() => {
@@ -24,9 +22,9 @@ const PointForm = () => {
         const val = e.target.value;
         setRLocal(val);
 
-        // Очищаем глобальную ошибку при любом вводе
+
         if (globalRError) dispatch(setRError(''));
-        setLocalErrors(prev => ({ ...prev, r: '' })); // Очищаем локальную ошибку
+        setLocalErrors(prev => ({ ...prev, r: '' }));
 
         const numVal = parseFloat(val.replace(',', '.'));
         if (!isNaN(numVal)) {
@@ -38,7 +36,7 @@ const PointForm = () => {
         let newErrors = { y: '', r: '' };
         let isValid = true;
 
-        // Очищаем глобальную ошибку перед проверкой
+
         dispatch(setRError(''));
 
         const yVal = parseFloat(y.replace(',', '.'));
@@ -66,7 +64,7 @@ const PointForm = () => {
         <Paper elevation={3} sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6" gutterBottom>Параметры</Typography>
 
-            {/* X ... (без изменений) */}
+
             <Box>
                 <Typography variant="subtitle2" gutterBottom>Выберите X:</Typography>
                 <ToggleButtonGroup
@@ -83,7 +81,7 @@ const PointForm = () => {
                 </ToggleButtonGroup>
             </Box>
 
-            {/* Y ... (без изменений) */}
+
             <Box>
                 <Typography variant="subtitle2" gutterBottom>Введите Y (-3 ... 3):</Typography>
                 <TextField
@@ -98,7 +96,7 @@ const PointForm = () => {
                 />
             </Box>
 
-            {/* R: Здесь показываем или локальную ошибку (при сабмите), или глобальную (от графика) */}
+
             <Box>
                 <Typography variant="subtitle2" gutterBottom>Введите R (1 ... 4):</Typography>
                 <TextField
@@ -107,9 +105,9 @@ const PointForm = () => {
                     fullWidth
                     value={rLocal}
                     onChange={handleRChange}
-                    // Показываем красную рамку, если есть любая ошибка
+
                     error={!!localErrors.r || !!globalRError}
-                    // Текст ошибки: локальный ИЛИ глобальный
+
                     helperText={localErrors.r || globalRError}
                     placeholder="1 ... 4"
                 />

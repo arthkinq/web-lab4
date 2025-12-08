@@ -1,10 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Пытаемся достать токен из localStorage при запуске
 const token = localStorage.getItem('jwt_token');
 
 const initialState = {
-    isAuthenticated: !!token, // true, если токен есть
+    isAuthenticated: !!token,
     token: token,
     username: localStorage.getItem('username') || null
 };
@@ -17,7 +16,7 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
             state.token = action.payload.token;
             state.username = action.payload.username;
-            // Сохраняем в браузере
+
             localStorage.setItem('jwt_token', action.payload.token);
             localStorage.setItem('username', action.payload.username);
         },
