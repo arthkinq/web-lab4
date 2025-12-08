@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import StartPage from './pages/StartPage';
+import MainPage from './pages/MainPage';
+
+/**
+ * Защищенный маршрут (для /main).
+ * Если пользователь НЕ авторизован -> редирект на / (логин).
+ * Если авторизован -> показываем страницу.
+ */
+const PrivateRoute = ({ children }) => {
+    const isAuth = useSelector((state) => state.auth.isAuthenticated);
+    return isAuth ? children : <Navigate to="/" replace />;
+};
+
+/**
+ * Анонимный маршрут (для /).
+ * Если пользователь УЖЕ авторизован -> редирект на /main.
+ * Если не авторизован -> показываем форму входа.
+ */
+const AnonymousRoute = ({ children }) => {
+    const isAuth = useSelector((state) => state.auth.isAuthenticated);
+    return isAuth ? <Navigate to="/main" replace /> : children;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+    return (
+        <Routes>
+            {/* Страница входа/регистрации (доступна только гостям) */}
+            <Route
+                path="/"
+                element={
+                    <AnonymousRoute>
+                        <StartPage />
+                    </AnonymousRoute>
+                }
+            />
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+            {/* Главная страница (доступна только авторизованным) */}
+            <Route
+                path="/main"
+                element={
+                    <PrivateRoute>
+                        <MainPage />
+                    </PrivateRoute>
+                }
+            />
+
+            {/* Любой несуществующий маршрут перенаправляем на начало */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 }
 
-export default App
+export default App;

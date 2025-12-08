@@ -27,3 +27,7 @@ tasks.test {
 tasks.war {
     archiveFileName.set("weblab4.war")
 }
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}

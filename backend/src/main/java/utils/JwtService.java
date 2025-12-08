@@ -7,12 +7,15 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets; // Добавь импорт
 import java.util.Date;
 
 @ApplicationScoped
 public class JwtService {
-    // Генерируем безопасный ключ (в проде хранить в environment variables!)
-    private static final Key KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // ВАЖНО: Ключ должен быть длинным (минимум 256 бит / 32 символа)
+    private static final String SECRET_STRING = "my_super_secret_key_for_weblab4_very_long_secure_string";
+    private static final Key KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
+
     private static final long EXPIRATION_TIME = 30 * 60 * 1000; // 30 минут
 
     public String generateToken(String username) {
@@ -33,7 +36,7 @@ public class JwtService {
                     .getBody();
             return claims.getSubject();
         } catch (Exception e) {
-            return null; // Токен невалиден или просрочен
+            return null;
         }
     }
 }

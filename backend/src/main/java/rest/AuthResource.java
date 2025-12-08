@@ -12,7 +12,7 @@ import services.UserService;
 import utils.JwtService;
 
 @Path("/auth")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
