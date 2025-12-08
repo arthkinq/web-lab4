@@ -5,11 +5,9 @@
              version="3.0">
 
     <persistence-unit name="lab4Unit">
-        <!-- Используем то же подключение, что и в лаб 3, оно уже настроено на сервере -->
         <jta-data-source>java:/PostgresDS</jta-data-source>
 
         <properties>
-            <!-- ЗАМЕНИТЬ НА update НЕ ОСТАВИТЬ create -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <property name="hibernate.show_sql" value="true"/>

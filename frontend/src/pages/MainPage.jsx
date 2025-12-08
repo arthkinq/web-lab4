@@ -30,7 +30,7 @@ const MainPage = () => {
 
     return (
         <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f1f5f9' }}>
-            {/* Верхняя панель (Header) */}
+
             <AppBar position="static" sx={{ mb: 2 }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -92,7 +92,7 @@ const MainPage = () => {
                     <Graph />
                 </Box>
 
-                {/* Область ФОРМЫ */}
+
                 <Box sx={{
                     gridArea: 'form',
                     width: '100%',

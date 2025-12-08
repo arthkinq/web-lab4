@@ -15,7 +15,6 @@ public class UserService {
     private EntityManager em;
 
     public boolean register(String username, String password) {
-        // Проверяем, есть ли такой юзер
         List<User> existing = em.createQuery("SELECT u FROM User u WHERE u.username = :name", User.class)
                 .setParameter("name", username)
                 .getResultList();

@@ -21,7 +21,6 @@ const StartPage = () => {
             if (isRegister) {
                 setError('Регистрация успешна! Теперь войдите.');
             } else {
-                // Если это вход - сохраняем токен и идем на главную
                 dispatch(loginSuccess({ token: response.data.token, username: login }));
                 navigate('/main');
             }
@@ -37,7 +36,7 @@ const StartPage = () => {
                     Лабораторная №4
                 </Typography>
                 <Typography variant="body2" align="center" color="textSecondary">
-                    Сланов Артур | P3222 | 74899
+                    Сланов Артур | P3222 | 74902
                 </Typography>
 
                 <TextField
