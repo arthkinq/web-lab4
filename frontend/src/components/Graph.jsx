@@ -300,7 +300,7 @@ const Graph = () => {
                                 </Typography>
                                 <Slider
                                     value={typeof currentR === 'number' ? currentR : 1}
-                                    min={1} max={4} step={0.5} marks
+                                    min={1} max={4} step={0.1} marks
                                     sx={{ color: '#6366f1', width: '50%', py: 1.5 }}
                                     onChange={(e, val) => dispatch(setR(val))}
                                 />
