@@ -349,7 +349,8 @@ const Graph = () => {
                             sx={{
                                 bgcolor: isFullscreen ? '#fee2e2' : '#f1f5f9',
                                 color: isFullscreen ? '#ef4444' : '#64748b',
-                                '&:hover': { bgcolor: isFullscreen ? '#fecaca' : '#e2e8f0' }
+                                '&:hover': { bgcolor: isFullscreen ? '#fecaca' : '#e2e8f0'}
+
                             }}
                         >
                             {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}

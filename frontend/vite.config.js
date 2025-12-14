@@ -9,5 +9,9 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, '../backend/src/main/webapp'),
     emptyOutDir: false,
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173
   }
 })
