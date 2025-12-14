@@ -3,112 +3,127 @@ import { Box } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const BackgroundBlobs = ({ darkMode }) => {
-    // Цвета для светлой и темной темы
-    const colors = {
-        blob1: darkMode ? '#4f46e5' : '#a855f7', // Indigo / Purple
-        blob2: darkMode ? '#0891b2' : '#22d3ee', // Cyan (под цвет звезд)
-        blob3: darkMode ? '#be185d' : '#ec4899', // Pink
+    // Настройки цветов. Для "вау" эффекта используем более насыщенные/глубокие цвета в тонах
+    const palette = {
+        dark: {
+            blob1: 'radial-gradient(circle, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0) 70%)', // Deep Violet
+            blob2: 'radial-gradient(circle, rgba(6, 182, 212, 0.8) 0%, rgba(8, 145, 178, 0) 70%)',  // Electric Cyan
+            blob3: 'radial-gradient(circle, rgba(219, 39, 119, 0.8) 0%, rgba(190, 24, 93, 0) 70%)',  // Hot Pink
+        },
+        light: {
+            blob1: 'radial-gradient(circle, rgba(167, 139, 250, 0.6) 0%, rgba(221, 214, 254, 0) 70%)', // Soft Purple
+            blob2: 'radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(207, 250, 254, 0) 70%)',  // Soft Cyan
+            blob3: 'radial-gradient(circle, rgba(244, 114, 182, 0.6) 0%, rgba(252, 231, 243, 0) 70%)',  // Soft Pink
+        }
     };
 
-    // Общая прозрачность (в темной теме поменьше, чтобы не слепило)
-    const opacity = darkMode ? 0.3 : 0.45;
+    const theme = darkMode ? palette.dark : palette.light;
+
+    // Общие стили анимации для плавности
+    const transitionSettings = {
+        duration: 20, // Базовая длительность (будет варьироваться)
+        repeat: Infinity,
+        repeatType: "reverse", // Движение туда-сюда создает более естественное "плавание"
+        ease: "easeInOut"
+    };
 
     return (
         <Box sx={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            zIndex: 0, pointerEvents: 'none', overflow: 'hidden'
+            zIndex: 0, pointerEvents: 'none', overflow: 'hidden',
+            // Добавляем легкий шум или затемнение фона для контраста в темной теме
+            background: darkMode ? 'linear-gradient(to bottom, #0f172a, #1e1b4b)' : '#f8fafc'
         }}>
 
-            {/* BLOB 1: Большой Фиолетовый (Слева сверху) */}
+            {/* BLOB 1: Основной атмосферный (Фиолетовый) */}
             <motion.div
                 animate={{
-                    x: [0, 100, -50, 0],
-                    y: [0, -100, 50, 0],
-                    scale: [1, 1.2, 0.9, 1],
-                    rotate: [0, 180, 360], // Полный оборот
-                    // Морфинг формы (из круга в огурец и обратно)
-                    borderRadius: [
-                        "60% 40% 30% 70% / 60% 30% 70% 40%",
-                        "30% 60% 70% 40% / 50% 60% 30% 60%",
-                        "60% 40% 30% 70% / 60% 30% 70% 40%"
-                    ]
+                    x: ["-20%", "20%", "-10%"],
+                    y: ["-20%", "10%", "-20%"],
+                    scale: [1, 1.4, 1],
+                    rotate: [0, 45, -45, 0],
                 }}
-                transition={{
-                    duration: 25,
-                    repeat: Infinity,
-                    ease: "linear"
-                }}
+                transition={{ ...transitionSettings, duration: 35 }}
                 style={{
                     position: 'absolute',
                     top: '-10%',
                     left: '-10%',
-                    width: '60vw',
-                    height: '60vw',
-                    backgroundColor: colors.blob1,
-                    opacity: opacity,
-                    filter: 'blur(60px)', // Чуть меньше блюра, чтобы видеть форму
-                    mixBlendMode: darkMode ? 'screen' : 'multiply' // Режим смешивания для красивых пересечений
+                    width: '70vw',
+                    height: '70vw',
+                    background: theme.blob1,
+                    filter: 'blur(90px)', // Сильное размытие для эффекта "газа"
+                    opacity: darkMode ? 0.6 : 0.8,
+                    mixBlendMode: darkMode ? 'screen' : 'multiply',
+                    willChange: 'transform' // Оптимизация производительности
                 }}
             />
 
-            {/* BLOB 2: Циан/Голубой (Справа снизу) - Под цвет звезд */}
+            {/* BLOB 2: Холодный акцент (Циан) */}
             <motion.div
                 animate={{
-                    x: [0, -100, 50, 0],
-                    y: [0, 100, -50, 0],
-                    scale: [1, 1.3, 0.8, 1],
-                    rotate: [0, -180, -360], // Обратное вращение
-                    borderRadius: [
-                        "40% 60% 70% 30% / 40% 40% 60% 50%",
-                        "60% 40% 30% 70% / 60% 30% 70% 40%",
-                        "40% 60% 70% 30% / 40% 40% 60% 50%"
-                    ]
+                    x: ["20%", "-20%", "10%"],
+                    y: ["10%", "-20%", "20%"],
+                    scale: [1, 1.2, 0.9],
+                    rotate: [0, -60, 30, 0],
                 }}
-                transition={{
-                    duration: 30,
-                    repeat: Infinity,
-                    ease: "easeInOut"
+                transition={{ ...transitionSettings, duration: 40 }}
+                style={{
+                    position: 'absolute',
+                    top: '20%',
+                    right: '-20%',
+                    width: '60vw',
+                    height: '60vw',
+                    background: theme.blob2,
+                    filter: 'blur(100px)',
+                    opacity: darkMode ? 0.5 : 0.7,
+                    mixBlendMode: darkMode ? 'hard-light' : 'multiply',
+                    willChange: 'transform'
                 }}
+            />
+
+            {/* BLOB 3: Теплый акцент (Розовый) - блуждающий */}
+            <motion.div
+                animate={{
+                    x: ["-10%", "30%", "-20%"],
+                    y: ["20%", "-10%", "30%"],
+                    scale: [0.8, 1.1, 0.9],
+                }}
+                transition={{ ...transitionSettings, duration: 30 }}
                 style={{
                     position: 'absolute',
                     bottom: '-10%',
-                    right: '-10%',
-                    width: '55vw',
-                    height: '55vw',
-                    backgroundColor: colors.blob2,
-                    opacity: opacity,
-                    filter: 'blur(50px)',
-                    mixBlendMode: darkMode ? 'screen' : 'multiply'
+                    left: '20%',
+                    width: '50vw',
+                    height: '50vw',
+                    background: theme.blob3,
+                    filter: 'blur(110px)',
+                    opacity: darkMode ? 0.4 : 0.6,
+                    mixBlendMode: darkMode ? 'screen' : 'multiply',
+                    willChange: 'transform'
                 }}
             />
 
-            {/* BLOB 3: Розовый акцент (Гуляет по центру) */}
+            {/* BLOB 4: Дополнительный "блик" для сложности (меньший размер) */}
             <motion.div
                 animate={{
-                    x: [0, 150, -150, 0],
-                    y: [0, -50, 100, 0],
-                    scale: [1, 0.8, 1.2, 1],
-                    borderRadius: [
-                        "50% 50% 50% 50% / 50% 50% 50% 50%",
-                        "30% 70% 70% 30% / 30% 30% 70% 70%",
-                        "50% 50% 50% 50% / 50% 50% 50% 50%"
-                    ]
+                    x: ["50%", "-50%"],
+                    y: ["-50%", "50%"],
+                    scale: [1, 1.5, 1],
+                    opacity: [0.3, 0.6, 0.3]
                 }}
-                transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
+                transition={{ duration: 25, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
                 style={{
                     position: 'absolute',
-                    top: '30%',
-                    left: '20%',
-                    width: '40vw',
-                    height: '40vw',
-                    backgroundColor: colors.blob3,
-                    opacity: opacity * 0.8, // Чуть прозрачнее
-                    filter: 'blur(45px)',
-                    mixBlendMode: darkMode ? 'screen' : 'multiply'
+                    top: '40%',
+                    left: '40%',
+                    width: '30vw',
+                    height: '30vw',
+                    background: darkMode
+                        ? 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(0,0,0,0) 70%)'
+                        : 'radial-gradient(circle, rgba(196, 181, 253, 0.6) 0%, rgba(255,255,255,0) 70%)',
+                    filter: 'blur(60px)',
+                    mixBlendMode: 'overlay',
+                    willChange: 'transform, opacity'
                 }}
             />
         </Box>
