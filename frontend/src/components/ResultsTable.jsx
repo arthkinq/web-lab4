@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearTable } from '../redux/pointsSlice';
+import { clearTable, setCurrentPage } from '../redux/pointsSlice'; // setItemsPerPage больше не нужен здесь
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, Box, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    Chip, IconButton, Tooltip
+    Chip, IconButton, Tooltip, TablePagination
 } from '@mui/material';
 import { motion } from 'framer-motion';
 
@@ -15,6 +15,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 
 const formatDate = (dateData) => {
     if (!dateData) return "—";
@@ -29,11 +30,10 @@ const formatDate = (dateData) => {
 
 const ResultsTable = () => {
     const dispatch = useDispatch();
-    const points = useSelector((state) => state.points.items);
-    const darkMode = useSelector((state) => state.theme.darkMode); // Получаем тему
-    const [open, setOpen] = useState(false);
+    const { items: points, currentPage, itemsPerPage } = useSelector((state) => state.points);
+    const darkMode = useSelector((state) => state.theme.darkMode);
 
-    // Состояние для управления скроллом (чтобы не мигал при загрузке)
+    const [open, setOpen] = useState(false);
     const [isScrollable, setIsScrollable] = useState(false);
 
     const handleClickOpen = () => setOpen(true);
@@ -43,14 +43,23 @@ const ResultsTable = () => {
         setOpen(false);
     };
 
-    // --- ПАЛИТРА ТЕМЫ ---
+    const handleChangePage = (event, newPage) => {
+        dispatch(setCurrentPage(newPage));
+    };
+
+    // handleChangeRowsPerPage больше не нужен, так как мы фиксируем число
+
+    const visibleRows = points.slice(
+        currentPage * itemsPerPage,
+        currentPage * itemsPerPage + itemsPerPage
+    );
+
     const theme = {
         cardBg: darkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.8)',
         border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.6)',
         text: darkMode ? '#f1f5f9' : '#334155',
         subText: darkMode ? '#94a3b8' : '#64748b',
         headerBg: darkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(255,255,255,0.4)',
-        // Фон заголовков таблицы (почти непрозрачный для sticky эффекта)
         tableHeadBg: darkMode ? 'rgba(30, 41, 59, 0.98)' : 'rgba(248, 250, 252, 0.98)',
         rowHover: darkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.5)',
         iconBg: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#eff6ff',
@@ -68,7 +77,6 @@ const ResultsTable = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            // Включаем скролл только ПОСЛЕ анимации
             onAnimationComplete={() => setIsScrollable(true)}
             elevation={0}
             sx={{
@@ -76,16 +84,12 @@ const ResultsTable = () => {
                 background: theme.cardBg,
                 backdropFilter: 'blur(12px)',
                 border: theme.border,
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-
-                // --- ФИКС УГОЛКОВ ---
+                boxShadow: '0 8px 32px rgba(31, 38, 135, 0.15)',
                 clipPath: 'inset(0px round 28px)',
                 overflow: 'hidden',
-
                 display: 'flex', flexDirection: 'column',
-                height: '100%', maxHeight: '500px',
-                transform: 'translate3d(0,0,0)',
-                transition: 'background 0.3s, border 0.3s'
+                height: '100%', maxHeight: '600px',
+                transform: 'translate3d(0,0,0)'
             }}
         >
             {/* HEADER */}
@@ -94,8 +98,7 @@ const ResultsTable = () => {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 background: theme.headerBg,
                 borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
-                zIndex: 2,
-                flexShrink: 0
+                zIndex: 2, flexShrink: 0
             }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box sx={{
@@ -108,29 +111,12 @@ const ResultsTable = () => {
                     <Typography variant="h6" fontWeight={700} color={theme.text}>
                         История
                     </Typography>
-                    <Chip
-                        label={`${points.length}`}
-                        size="small"
-                        sx={{
-                            bgcolor: theme.iconBg,
-                            color: '#6366f1',
-                            fontWeight: 800,
-                            borderRadius: '8px'
-                        }}
-                    />
+                    <Chip label={`${points.length}`} size="small" sx={{ bgcolor: theme.iconBg, color: '#6366f1', fontWeight: 800, borderRadius: '8px' }} />
                 </Box>
 
                 {points.length > 0 && (
                     <Tooltip title="Очистить таблицу">
-                        <IconButton
-                            onClick={handleClickOpen}
-                            sx={{
-                                color: '#ef4444',
-                                bgcolor: darkMode ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2',
-                                '&:hover': { bgcolor: darkMode ? 'rgba(239, 68, 68, 0.2)' : '#fee2e2' },
-                                borderRadius: '12px'
-                            }}
-                        >
+                        <IconButton onClick={handleClickOpen} sx={{ color: '#ef4444', bgcolor: darkMode ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2', '&:hover': { bgcolor: darkMode ? 'rgba(239, 68, 68, 0.2)' : '#fee2e2' }, borderRadius: '12px' }}>
                             <DeleteSweepRoundedIcon />
                         </IconButton>
                     </Tooltip>
@@ -141,16 +127,11 @@ const ResultsTable = () => {
             <TableContainer sx={{
                 flexGrow: 1,
                 overflowY: isScrollable ? 'auto' : 'hidden',
-
-                // Кастомизация скроллбара
                 '&::-webkit-scrollbar': { width: '6px' },
                 '&::-webkit-scrollbar-track': { background: 'transparent' },
                 '&::-webkit-scrollbar-thumb': {
                     backgroundColor: darkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.3)',
                     borderRadius: '4px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                    backgroundColor: 'rgba(99, 102, 241, 0.6)'
                 },
                 scrollbarWidth: 'thin',
                 scrollbarColor: `${darkMode ? 'rgba(99, 102, 241, 0.4)' : 'rgba(99, 102, 241, 0.3)'} transparent`
@@ -158,16 +139,12 @@ const ResultsTable = () => {
                 <Table stickyHeader size="medium" sx={{ borderCollapse: 'separate', borderSpacing: 0 }}>
                     <TableHead>
                         <TableRow>
-                            {['X', 'Y', 'R', 'Результат', 'Время', 'Скрипт'].map((head, i) => (
+                            {['X', 'Y', 'R', 'Результат', 'Пользователь', 'Время', 'Скрипт'].map((head, i) => (
                                 <TableCell key={i} sx={{
-                                    bgcolor: theme.tableHeadBg,
-                                    backdropFilter: 'blur(8px)',
-                                    color: theme.subText,
-                                    fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px',
+                                    bgcolor: theme.tableHeadBg, backdropFilter: 'blur(8px)',
+                                    color: theme.subText, fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px',
                                     borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
-                                    py: 2,
-                                    borderTop: 'none',
-                                    transition: 'background 0.3s'
+                                    py: 2, borderTop: 'none'
                                 }}>
                                     {head}
                                 </TableCell>
@@ -178,7 +155,7 @@ const ResultsTable = () => {
                     <TableBody>
                         {points.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ borderBottom: 'none', py: 8 }}>
+                                <TableCell colSpan={7} align="center" sx={{ borderBottom: 'none', py: 8 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, opacity: 0.5, color: theme.subText }}>
                                         <HistoryEduRoundedIcon sx={{ fontSize: 48 }} />
                                         <Typography variant="body2">История пуста</Typography>
@@ -186,18 +163,15 @@ const ResultsTable = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            points.map((row) => (
+                            visibleRows.map((row) => (
                                 <TableRow
                                     key={row.id} hover
                                     sx={{
                                         '&:last-child td, &:last-child th': { border: 0 },
                                         transition: 'background 0.2s',
                                         '&:hover': { bgcolor: theme.rowHover },
-                                        animation: 'fadeInRow 0.4s ease-out forwards',
-                                        '@keyframes fadeInRow': {
-                                            '0%': { opacity: 0, transform: 'translateY(10px)' },
-                                            '100%': { opacity: 1, transform: 'translateY(0)' }
-                                        }
+                                        animation: 'fadeInRow 0.3s ease-out forwards',
+                                        '@keyframes fadeInRow': { from: { opacity: 0 }, to: { opacity: 1 } }
                                     }}
                                 >
                                     <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{Number(row.x).toFixed(3)}</TableCell>
@@ -213,17 +187,21 @@ const ResultsTable = () => {
                                             sx={{
                                                 fontWeight: 700, borderRadius: '8px',
                                                 ...(row.hit ? {
-                                                    bgcolor: darkMode ? 'rgba(22, 101, 52, 0.3)' : '#dcfce7',
-                                                    color: darkMode ? '#4ade80' : '#166534',
+                                                    bgcolor: darkMode ? 'rgba(22, 101, 52, 0.3)' : '#dcfce7', color: darkMode ? '#4ade80' : '#166534',
                                                     '& .MuiChip-icon': { color: darkMode ? '#4ade80' : '#166534' }
                                                 } : {
-                                                    borderColor: darkMode ? 'rgba(239, 68, 68, 0.5)' : '#fee2e2',
-                                                    color: darkMode ? '#f87171' : '#b91c1c',
-                                                    bgcolor: darkMode ? 'rgba(185, 28, 28, 0.1)' : '#fef2f2',
+                                                    borderColor: darkMode ? 'rgba(239, 68, 68, 0.5)' : '#fee2e2', color: darkMode ? '#f87171' : '#b91c1c', bgcolor: darkMode ? 'rgba(185, 28, 28, 0.1)' : '#fef2f2',
                                                     '& .MuiChip-icon': { color: '#ef4444' }
                                                 })
                                             }}
                                         />
+                                    </TableCell>
+
+                                    <TableCell sx={{ color: theme.text, fontWeight: 600, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <PersonRoundedIcon sx={{ fontSize: 16, color: theme.subText }} />
+                                            {row.user?.username || '—'}
+                                        </Box>
                                     </TableCell>
 
                                     <TableCell sx={{ color: theme.subText, fontFamily: 'monospace', fontSize: '0.85rem', borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
@@ -246,24 +224,49 @@ const ResultsTable = () => {
                 </Table>
             </TableContainer>
 
-            {/* DIALOG */}
-            <Dialog
-                open={open} onClose={handleClose}
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px', padding: 1,
-                        backdropFilter: 'blur(10px)',
-                        background: theme.dialogBg,
-                        border: theme.border
+            {/* --- ПАГИНАЦИЯ (УПРОЩЕННАЯ) --- */}
+            <TablePagination
+                component="div"
+                count={points.length}
+                page={currentPage}
+                onPageChange={handleChangePage}
+                rowsPerPage={itemsPerPage}
+                // Передаем пустой массив, чтобы скрыть выпадающий список
+                rowsPerPageOptions={[]}
+                // Убираем текст "Строк:"
+                labelRowsPerPage=""
+
+                sx={{
+                    color: theme.subText,
+                    borderTop: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                    overflow: 'hidden',
+
+                    // Центрируем оставшиеся элементы (текст "1-10 из 50" и стрелочки)
+                    '.MuiTablePagination-toolbar': {
+                        minHeight: '52px',
+                        paddingLeft: 2,
+                        paddingRight: 2,
+                        justifyContent: 'center' // Центрирование
+                    },
+
+                    // Скрываем лишние отступы, если они остались
+                    '.MuiTablePagination-spacer': {
+                        display: 'none'
+                    },
+
+                    '.MuiTablePagination-actions button': {
+                        color: theme.text,
+                        '&.Mui-disabled': { opacity: 0.3 }
                     }
                 }}
+            />
+
+            <Dialog
+                open={open} onClose={handleClose}
+                PaperProps={{ sx: { borderRadius: '24px', padding: 1, backdropFilter: 'blur(10px)', background: theme.dialogBg, border: theme.border } }}
             >
                 <DialogTitle sx={{ fontWeight: 800, color: theme.text }}>Очистить историю?</DialogTitle>
-                <DialogContent>
-                    <DialogContentText sx={{ color: theme.subText }}>
-                        Это действие удалит все результаты проверок.
-                    </DialogContentText>
-                </DialogContent>
+                <DialogContent><DialogContentText sx={{ color: theme.subText }}>Это действие удалит все результаты проверок.</DialogContentText></DialogContent>
                 <DialogActions sx={{ p: 2 }}>
                     <Button onClick={handleClose} sx={{ borderRadius: '12px', color: theme.subText, fontWeight: 600 }}>Отмена</Button>
                     <Button onClick={handleConfirm} variant="contained" color="error" startIcon={<DeleteSweepRoundedIcon />} sx={{ borderRadius: '12px', boxShadow: 'none', fontWeight: 600 }}>Удалить всё</Button>

@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPoint, setRError } from '../redux/pointsSlice';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { IconButton, Typography, Box, Chip, useTheme, useMediaQuery, Slider } from '@mui/material';
-// Иконки
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
@@ -18,25 +17,38 @@ const MIN_ZOOM = 0.5;
 const Graph = () => {
     const dispatch = useDispatch();
     const darkMode = useSelector((state) => state.theme.darkMode);
-    const { items: points, currentR } = useSelector((state) => state.points);
-
+    const { items: allPoints, currentR, currentPage, itemsPerPage } = useSelector((state) => state.points);
+    const points = allPoints.slice(
+        currentPage * itemsPerPage,
+        currentPage * itemsPerPage + itemsPerPage
+    );
     const isRValid = !isNaN(currentR) && Number(currentR) > 0;
 
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // Transform State & Ref
     const [transform, setTransformState] = useState({ x: 0, y: 0, k: 1 });
     const transformRef = useRef({ x: 0, y: 0, k: 1 });
 
     const [cursorCoords, setCursorCoords] = useState(null);
 
-    // --- REFS ---
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const zoomRef = useRef(null);
-    const animationFrameRef = useRef(null); // Для анимации сброса
+    const animationFrameRef = useRef(null);
+    const controls = useAnimation();
+    const isFirstRender = useRef(true);
 
-    // Refs для жестов
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        controls.start({
+            filter: ["blur(10px)", "blur(0px)"], // От размытого к четкому
+            transition: { duration: 0.4, ease: "easeOut" }
+        });
+    }, [isFullscreen, controls]);
+
     const dragStartRef = useRef(null);
     const pinchStartRef = useRef(null);
     const isDraggingRef = useRef(false);
@@ -44,7 +56,6 @@ const Graph = () => {
     const muiTheme = useTheme();
     const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
-    // Синхронизация Ref и State
     const setTransform = (newValOrFunc) => {
         let newVal;
         if (typeof newValOrFunc === 'function') {
@@ -56,7 +67,6 @@ const Graph = () => {
         setTransformState(newVal);
     };
 
-    // --- ПАЛИТРА ---
     const colors = {
         bg: darkMode ? '#1e293b' : '#ffffff',
         grid: darkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(15, 23, 42, 0.05)',
@@ -67,9 +77,9 @@ const Graph = () => {
         pointMiss: '#ef4444',
         fullscreenBg: darkMode ? '#0f172a' : '#f8fafc',
         controlBg: darkMode ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+
     };
 
-    // --- УТИЛИТЫ ---
     const clampOffset = (val, scale) => {
         const maxPan = (SVG_SIZE * scale) / 1.2;
         return Math.max(Math.min(val, maxPan), -maxPan);
@@ -90,7 +100,6 @@ const Graph = () => {
         return { x: mathX, y: mathY };
     };
 
-    // --- АНИМАЦИЯ (RESET VIEW) ---
     const animateViewTo = (targetX, targetY, targetK) => {
         const start = { ...transformRef.current };
         const startTime = performance.now();
@@ -98,7 +107,6 @@ const Graph = () => {
 
         const step = (now) => {
             const progress = Math.min((now - startTime) / duration, 1);
-            // Easing: cubic out
             const ease = 1 - Math.pow(1 - progress, 3);
 
             const next = {
@@ -118,22 +126,17 @@ const Graph = () => {
         animationFrameRef.current = requestAnimationFrame(step);
     };
 
-    // --- ЭФФЕКТЫ ---
-    // Сброс при входе/выходе из Fullscreen
+
     useEffect(() => {
         if (isFullscreen) {
-            // Плавно зумим при открытии
             animateViewTo(0, 0, INITIAL_ZOOM);
         } else {
-            // Мгновенно сбрасываем при закрытии
             setTransform({ x: 0, y: 0, k: 1 });
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         }
     }, [isFullscreen]);
 
-    // --- EVENT HANDLERS ---
 
-    // 1. КОЛЕСИКО (ZOOM)
     useEffect(() => {
         const el = zoomRef.current;
         if (!el) return;
@@ -142,7 +145,6 @@ const Graph = () => {
             if (!isFullscreen) return;
             e.preventDefault();
 
-            // Останавливаем анимацию если юзер вмешался
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
             const t = transformRef.current;
@@ -163,10 +165,8 @@ const Graph = () => {
         return () => el.removeEventListener('wheel', handleWheel);
     }, [isFullscreen]);
 
-    // 2. МЫШЬ (DESKTOP)
+
     const onMouseDown = (e) => {
-        // ИСПРАВЛЕНИЕ: Убрали проверку (!isFullscreen), чтобы клики работали в маленьком режиме
-        // Останавливаем анимацию
         if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
         isDraggingRef.current = false;
@@ -187,7 +187,6 @@ const Graph = () => {
 
         const ds = dragStartRef.current;
 
-        // ИСПРАВЛЕНИЕ: Перемещаем график (драг) ТОЛЬКО если мы в Fullscreen
         if (ds && isFullscreen) {
             const dx = (e.clientX - ds.startX) / ds.scaleFactor;
             const dy = (e.clientY - ds.startY) / ds.scaleFactor;
@@ -203,7 +202,6 @@ const Graph = () => {
     };
 
     const onMouseUp = (e) => {
-        // Если мы не тащили (или тащили мало), и есть начальная точка -> это клик
         if (!isDraggingRef.current && dragStartRef.current) {
             handleGraphClick(e.clientX, e.clientY);
         }
@@ -217,7 +215,6 @@ const Graph = () => {
         setCursorCoords(null);
     };
 
-    // 3. ТАЧ (MOBILE)
     const onTouchStart = (e) => {
         if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
 
@@ -259,7 +256,6 @@ const Graph = () => {
             const dx = (touch.clientX - ds.startX) / ds.scaleFactor;
             const dy = (touch.clientY - ds.startY) / ds.scaleFactor;
 
-            // ИСПРАВЛЕНИЕ: Драг работает только в Fullscreen
             if (isFullscreen) {
                 if (Math.abs(dx) > 5 || Math.abs(dy) > 5) isDraggingRef.current = true;
 
@@ -293,7 +289,6 @@ const Graph = () => {
             const touch = e.changedTouches[0];
             const dist = Math.hypot(touch.clientX - dragStartRef.current.startX, touch.clientY - dragStartRef.current.startY);
 
-            // Если сдвиг маленький (даже если isDragging случайно стал true из-за дрожания)
             if (dist < 10) {
                 handleGraphClick(touch.clientX, touch.clientY);
             }
@@ -336,6 +331,11 @@ const Graph = () => {
         <motion.div
             layout
             ref={containerRef}
+            animate={controls}
+            transition={{
+                type: "spring", stiffness: 250, damping: 25
+            }}
+
             style={{
                 position: isFullscreen ? 'fixed' : 'relative',
                 inset: isFullscreen ? 0 : 'auto',
@@ -350,7 +350,6 @@ const Graph = () => {
                 paddingBottom: isFullscreen ? 'env(safe-area-inset-bottom)' : 0,
             }}
         >
-            {/* ШАПКА */}
             <Box sx={{
                 p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 borderBottom: `1px solid ${colors.grid}`, zIndex: 10, bgcolor: colors.bg,
@@ -362,7 +361,7 @@ const Graph = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pointerEvents: 'auto' }}>
                     <Chip
                         label={`R = ${Number(currentR).toFixed(1)}`}
-                        size="small" color={isRValid ? "primary" : "default"}
+                        size="small" color='primary'
                         sx={{ boxShadow: isFullscreen ? '0 2px 5px rgba(0,0,0,0.2)' : 'none' }}
                     />
                     {isFullscreen && cursorCoords && !isMobile && (
@@ -372,23 +371,50 @@ const Graph = () => {
                     )}
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, pointerEvents: 'auto' }}>
+                <Box sx={{ display: 'flex', gap: 1, pointerEvents: 'auto', alignItems: 'center' }}>
                     {isFullscreen && !isMobile && (
-                        <IconButton size="small" onClick={() => animateViewTo(0, 0, INITIAL_ZOOM)}>
+                        <IconButton
+                            onClick={() => animateViewTo(0, 0, INITIAL_ZOOM)}
+                            sx={{
+                                width: 48,  // Жесткая ширина
+                                height: 48, // Жесткая высота
+                                color: colors.text,
+                                bgcolor: colors.grid,
+                                backdropFilter: 'blur(4px)',
+                                borderRadius: '50%',
+                                flexShrink: 0, // Запрещаем сжиматься
+                                '&:hover': {
+                                    bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                                }
+                            }}
+                        >
+                            {/* Иконку можно оставить small или medium, главное что кнопка теперь фиксированная */}
                             <CenterFocusStrongIcon fontSize="small" />
                         </IconButton>
                     )}
+
                     <IconButton
-                        size="small"
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        sx={{ bgcolor: isFullscreen ? 'rgba(239, 68, 68, 0.1)' : colors.grid, backdropFilter: 'blur(4px)' }}
+                        sx={{
+                            width: 48,  // Те же размеры для симметрии
+                            height: 48,
+                            color: isFullscreen ? '#ef4444' : colors.text,
+                            bgcolor: isFullscreen ? 'rgba(239, 68, 68, 0.1)' : colors.grid,
+                            backdropFilter: 'blur(4px)',
+                            borderRadius: '50%', // Тоже делаем круглой для единообразия
+                            flexShrink: 0,
+                            '&:hover': {
+                                bgcolor: isFullscreen
+                                    ? 'rgba(239, 68, 68, 0.2)'
+                                    : (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+                            }
+                        }}
                     >
                         {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
                     </IconButton>
                 </Box>
             </Box>
 
-            {/* ОБЛАСТЬ SVG */}
             <Box
                 ref={zoomRef}
                 sx={{ flexGrow: 1, position: 'relative', touchAction: 'none', overflow: 'hidden' }}
@@ -396,7 +422,6 @@ const Graph = () => {
                 onMouseLeave={onMouseLeave}
                 onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
             >
-                {/* Всплывашка для мобилок */}
                 {isFullscreen && isMobile && cursorCoords && (
                     <Box sx={{
                         position: 'absolute', bottom: 100, left: '50%', transform: 'translateX(-50%)',
@@ -429,13 +454,11 @@ const Graph = () => {
                                 </>
                             )}
 
-                            {/* ОСИ */}
                             <line x1="-155" y1="0" x2="155" y2="0" stroke={colors.axis} strokeWidth="1.5" />
                             <line x1="0" y1="-155" x2="0" y2="155" stroke={colors.axis} strokeWidth="1.5" />
                             <polygon points="155,0 150,-3 150,3" fill={colors.axis} />
                             <polygon points="0,-155 -3,-150 3,-150" fill={colors.axis} />
 
-                            {/* МЕТКИ */}
                             {isRValid && (
                                 <>
                                     <line x1={BASE_SCALE} y1="-3" x2={BASE_SCALE} y2="3" stroke={colors.axis} strokeWidth="1"/>
@@ -458,16 +481,15 @@ const Graph = () => {
                                 </>
                             )}
 
-                            {/* ТОЧКИ */}
-                            {points.map((p, i) => (
+                            {currentR >= 1 && points.map((p, i) => (
                                 <circle
                                     key={i}
-                                    cx={(p.x/currentR)*BASE_SCALE}
-                                    cy={-(p.y/currentR)*BASE_SCALE}
-                                    r={4/transform.k}
+                                    cx={(p.x / currentR) * BASE_SCALE}
+                                    cy={-(p.y / currentR) * BASE_SCALE}
+                                    r={4 / transform.k}
                                     fill={p.hit ? colors.pointHit : colors.pointMiss}
                                     stroke={colors.bg}
-                                    strokeWidth={1/transform.k}
+                                    strokeWidth={1 / transform.k}
                                 />
                             ))}
                         </g>
@@ -475,7 +497,6 @@ const Graph = () => {
                 </svg>
             </Box>
 
-            {/* НИЖНЯЯ ПАНЕЛЬ (MOBILE) */}
             {isFullscreen && isMobile && (
                 <Box sx={{ p: 2, bgcolor: colors.controlBg, borderTop: `1px solid ${colors.grid}`, pb: 'calc(10px + env(safe-area-inset-bottom))', backdropFilter: 'blur(10px)' }}>
                     <Typography variant="caption" sx={{ color: colors.text, display: 'block', mb: 1 }}>Изменить радиус:</Typography>

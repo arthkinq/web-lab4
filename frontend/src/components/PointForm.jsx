@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPoint, setR, setRError } from '../redux/pointsSlice';
-import { Paper, Typography, TextField, Button, Box } from '@mui/material';
+import { Paper, Typography, TextField, Button, Box, InputAdornment } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Иконки
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import AdsClickRoundedIcon from '@mui/icons-material/AdsClickRounded';
-import HeightRoundedIcon from '@mui/icons-material/HeightRounded';
-import RadarRoundedIcon from '@mui/icons-material/RadarRounded';
+import AdsClickRoundedIcon from '@mui/icons-material/AdsClickRounded'; // Для X
+import HeightRoundedIcon from '@mui/icons-material/HeightRounded';     // Для Y
+import RadarRoundedIcon from '@mui/icons-material/RadarRounded';       // Для R
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 
 const PointForm = () => {
@@ -21,17 +21,14 @@ const PointForm = () => {
 
     const [x, setX] = useState(0);
     const [y, setY] = useState('');
-    // Локальное состояние ошибок
+    const [rLocal, setRLocal] = useState(currentR);
     const [localErrors, setLocalErrors] = useState({ y: '', r: '' });
 
-    // Диапазоны по заданию
-    const xValues = ['-4', '-3', '-2', '-1', '0', '1', '2', '3', '4'];
-    const rValues = ['-4', '-3', '-2', '-1', '0', '1', '2', '3', '4'];
-
-    // Палитра
+    // --- ПАЛИТРА ТЕМЫ ---
     const theme = {
         cardBg: darkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.8)',
         border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.6)',
+        textPrimary: darkMode ? '#f1f5f9' : '#334155',
         textSecondary: darkMode ? '#94a3b8' : '#64748b',
         btnInactiveBg: darkMode ? '#0f172a' : 'rgba(241, 245, 249, 0.8)',
         btnInactiveText: darkMode ? '#94a3b8' : '#64748b',
@@ -40,14 +37,16 @@ const PointForm = () => {
         iconColor: darkMode ? '#818cf8' : '#6366f1'
     };
 
-    // При изменении R через кнопки
+    useEffect(() => {
+        setRLocal(currentR);
+    }, [currentR]);
+
+    // --- ВАЛИДАЦИЯ И ЛОГИКА ---
     const handleRChange = (val) => {
         const numVal = Number(val);
-
-        // Валидация R (по заданию приложение должно валидировать некорректные данные)
+        // Валидация R сразу при клике
         if (numVal <= 0) {
-            dispatch(setRError('Радиус должен быть положительным'));
-            // Мы все равно ставим значение, чтобы UI обновился, но блокируем отправку флагами ошибок
+            dispatch(setRError('R должен быть > 0'));
         } else {
             dispatch(setRError(''));
         }
@@ -62,18 +61,18 @@ const PointForm = () => {
     const handleSubmit = () => {
         let newErrors = { y: '', r: '' };
         let isValid = true;
+        dispatch(setRError(''));
 
-        // Валидация Y (-5 ... 5)
         if (!isStrictNumber(y)) {
-            newErrors.y = 'Введите число'; isValid = false;
+            newErrors.y = 'Y должен быть числом'; isValid = false;
         } else {
             const yVal = parseFloat(y.replace(',', '.'));
-            if (yVal < -5 || yVal > 5) { newErrors.y = 'Диапазон: -5 ... 5'; isValid = false; }
+            if ( yVal > 5 || yVal < -5) { newErrors.y = 'Y должен быть от -5 до 5'; isValid = false; }
+
         }
 
-        // Валидация R (положительный)
         if (currentR <= 0) {
-            dispatch(setRError('R должен быть > 0'));
+            dispatch(setRError('R должен быть больше 0'));
             isValid = false;
         }
 
@@ -88,7 +87,11 @@ const PointForm = () => {
         }
     };
 
-    // Анимация
+    const xValues = ['-2','-1.5','-1','-0.5','0','0.5','1','1.5'];
+    // Добавим значения для R кнопок, раз уж мы делаем интерфейс консистентным
+    const rValues = ['-4','-3','-2','-1','0','1', '2', '3', '4'];
+
+    // --- АНИМАЦИЯ ---
     const containerVariants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1, duration: 0.5, type: 'spring' } }
@@ -116,7 +119,6 @@ const PointForm = () => {
                 transition: 'background 0.3s, border 0.3s'
             }}
         >
-            {/* ЗАГОЛОВОК */}
             <motion.div variants={itemVariants}>
                 <Typography variant="h5" sx={{
                     fontWeight: 800,
@@ -126,19 +128,20 @@ const PointForm = () => {
                     Параметры
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.textSecondary, fontWeight: 500 }}>
-                    Задайте координаты и радиус
+                    Задайте координаты точки
                 </Typography>
             </motion.div>
 
-            {/* ВЫБОР X (Buttons) */}
+            {/* ВЫБОР X */}
             <motion.div variants={itemVariants}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                     <AdsClickRoundedIcon fontSize="small" sx={{ color: theme.iconColor }} />
                     <Typography variant="subtitle2" fontWeight={700} sx={{ color: theme.textSecondary }}>
-                        Координата X
+                        Ось X
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {xValues.map((v) => {
                         const isSelected = Number(x) === Number(v);
                         return (
@@ -148,12 +151,20 @@ const PointForm = () => {
                                 onClick={() => setX(Number(v))}
                                 style={{
                                     border: 'none', outline: 'none', cursor: 'pointer',
-                                    padding: '8px 14px', borderRadius: '12px',
+                                    // ИСПРАВЛЕНИЕ: Фиксированная ширина и высота
+                                    width: '54px',
+                                    height: '42px',
+                                    padding: 0, // Убираем паддинг, центрируем через Flex
+                                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+
+                                    borderRadius: '14px',
                                     fontSize: '0.9rem', fontWeight: isSelected ? 800 : 600,
-                                    background: isSelected ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : theme.btnInactiveBg,
+                                    background: isSelected
+                                        ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                                        : theme.btnInactiveBg,
                                     color: isSelected ? 'white' : theme.btnInactiveText,
                                     boxShadow: isSelected ? '0 4px 12px rgba(99, 102, 241, 0.3)' : 'none',
-                                    transition: 'all 0.3s'
+                                    transition: 'background 0.3s, color 0.3s'
                                 }}
                             >
                                 {v}
@@ -163,17 +174,21 @@ const PointForm = () => {
                 </Box>
             </motion.div>
 
-            {/* INPUT Y (Text) */}
+            {/* INPUT Y */}
             <motion.div variants={itemVariants}>
                 <CustomTextField
-                    label="Координата Y" placeholder="-5 ... 5" value={y}
+                    label="Ось Y" placeholder="-5 ... 5" value={y}
                     onChange={(e) => setY(e.target.value)}
                     error={localErrors.y} icon={<HeightRoundedIcon />}
                     theme={theme}
                 />
             </motion.div>
 
-            {/* ВЫБОР R (Buttons) */}
+            {/* ВЫБОР R (КНОПКИ ВМЕСТО INPUT для красоты, или оставь инпут, если так нужно по заданию) */}
+            {/* Если по заданию нужен именно Input для R, то оставь CustomTextField ниже.
+                Но раз мы делали слайдер на графике, логично сделать кнопки и здесь.
+                Ниже пример кнопок для R. */}
+
             <motion.div variants={itemVariants}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                     <RadarRoundedIcon fontSize="small" sx={{ color: globalRError ? '#ef4444' : theme.iconColor }} />
@@ -181,10 +196,10 @@ const PointForm = () => {
                         Радиус R
                     </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {rValues.map((v) => {
                         const isSelected = Number(currentR) === Number(v);
-                        const isInvalid = Number(v) <= 0; // Для визуальной индикации "опасных" кнопок
                         return (
                             <motion.button
                                 key={v}
@@ -192,15 +207,21 @@ const PointForm = () => {
                                 onClick={() => handleRChange(v)}
                                 style={{
                                     border: 'none', outline: 'none', cursor: 'pointer',
-                                    padding: '8px 14px', borderRadius: '12px',
+                                    // ИСПРАВЛЕНИЕ: Фиксированная ширина и высота
+                                    width: '54px',
+                                    height: '42px',
+                                    padding: 0,
+                                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+
+                                    borderRadius: '14px',
                                     fontSize: '0.9rem', fontWeight: isSelected ? 800 : 600,
-                                    // Красный оттенок если выбрано отрицательное
+                                    // Цвет зависит от валидности R (если вдруг придет 0)
                                     background: isSelected
-                                        ? (isInvalid ? 'linear-gradient(135deg, #ef4444, #f87171)' : 'linear-gradient(135deg, #10b981, #34d399)')
+                                        ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
                                         : theme.btnInactiveBg,
                                     color: isSelected ? 'white' : theme.btnInactiveText,
-                                    boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
-                                    transition: 'all 0.3s'
+                                    boxShadow: isSelected ? '0 4px 12px rgba(99, 102, 241, 0.3)' : 'none',
+                                    transition: 'background 0.3s, color 0.3s'
                                 }}
                             >
                                 {v}
@@ -208,24 +229,44 @@ const PointForm = () => {
                         );
                     })}
                 </Box>
+
+                {/* Сообщение об ошибке R */}
                 <AnimatePresence>
                     {globalRError && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                            style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 600, marginTop: '8px', display: 'flex', alignItems: 'center', gap: 4 }}
+                            initial={{ opacity: 0, y: -5, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -5, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            style={{ overflow: 'hidden' }}
                         >
-                            <ErrorOutlineRoundedIcon fontSize="inherit" /> {globalRError}
+                            <Box sx={{
+                                display: 'flex', alignItems: 'center', gap: 1,
+                                mt: 1, p: 1, px: 1.5,
+                                borderRadius: '12px',
+                                // Тот же стиль, что и в инпутах
+                                bgcolor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
+                                color: '#ef4444',
+                                border: '1px solid',
+                                borderColor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.3)' : '#fecaca',
+                            }}>
+                                <ErrorOutlineRoundedIcon fontSize="small" />
+                                <Typography variant="caption" fontWeight={700}>
+                                    {globalRError}
+                                </Typography>
+                            </Box>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </motion.div>
 
-            {/* КНОПКА ОТПРАВКИ */}
+            {/* КНОПКА */}
             <motion.div variants={itemVariants}>
                 <Button
                     fullWidth variant="contained" size="large" onClick={handleSubmit}
                     component={motion.button}
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.02, boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)' }}
+                    whileTap={{ scale: 0.97 }}
                     startIcon={<SendRoundedIcon />}
                     sx={{
                         mt: 1, py: 1.5, borderRadius: '18px',
@@ -241,47 +282,82 @@ const PointForm = () => {
     );
 };
 
-// --- Компонент Input (Тот же, что и был, с косметическими правками) ---
+// --- CustomTextField Component ---
 const CustomTextField = ({ label, value, onChange, error, placeholder, icon, theme }) => (
-    <Box sx={{ position: 'relative' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, ml: 1 }}>
-            {React.cloneElement(icon, { fontSize: 'small', sx: { color: error ? '#ef4444' : theme.iconColor } })}
-            <Typography variant="subtitle2" fontWeight={700} sx={{ color: error ? '#ef4444' : theme.textSecondary }}>
+    <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        {/* Метка с иконкой */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
+            {React.cloneElement(icon, { fontSize: 'small', sx: { color: error ? '#ef4444' : theme.iconColor, transition: 'color 0.3s' } })}
+            <Typography variant="subtitle2" fontWeight={700} sx={{ color: error ? '#ef4444' : theme.textSecondary, transition: 'color 0.3s' }}>
                 {label}
             </Typography>
         </Box>
 
         <TextField
-            fullWidth variant="filled" value={value} onChange={onChange} placeholder={placeholder}
-            error={!!error} autoComplete="off"
+            fullWidth
+            variant="filled"
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            error={!!error}
+            autoComplete="off"
+            // Отключаем стандартный helperText, так как делаем свой
+            helperText={null}
             InputProps={{
                 disableUnderline: true,
                 sx: {
                     borderRadius: '16px',
-                    bgcolor: error ? (theme.inputBg === '#0f172a' ? 'rgba(127, 29, 29, 0.2)' : '#fef2f2') : theme.inputBg,
+                    // Фон меняется при ошибке
+                    bgcolor: error
+                        ? (theme.inputBg === '#0f172a' ? 'rgba(127, 29, 29, 0.15)' : '#fff1f2')
+                        : theme.inputBg,
                     border: '2px solid',
                     borderColor: error ? '#fecaca' : 'transparent',
                     transition: 'all 0.2s',
                     fontWeight: 600,
-                    color: theme.inputBg === '#0f172a' ? '#f1f5f9' : '#334155',
+                    color: theme.textPrimary,
                     '&:hover': {
-                        bgcolor: error ? (theme.inputBg === '#0f172a' ? 'rgba(127, 29, 29, 0.3)' : '#fef2f2') : theme.inputHover
+                        bgcolor: error
+                            ? (theme.inputBg === '#0f172a' ? 'rgba(127, 29, 29, 0.25)' : '#ffe4e6')
+                            : theme.inputHover
                     },
                     '&.Mui-focused': {
                         bgcolor: theme.inputBg === '#0f172a' ? '#1e293b' : '#fff',
                         borderColor: error ? '#ef4444' : '#8b5cf6',
+                        boxShadow: error
+                            ? '0 0 0 4px rgba(239, 68, 68, 0.15)'
+                            : '0 0 0 4px rgba(139, 92, 246, 0.15)'
                     },
                     '& input::placeholder': { color: theme.textSecondary, opacity: 0.7 }
                 }
             }}
         />
+
+        {/* --- КАСТОМНЫЙ БЛОК ОШИБКИ --- */}
         <AnimatePresence>
             {error && (
                 <motion.div
-                    initial={{ opacity: 0, height: 0, x: -10 }} animate={{ opacity: 1, height: 'auto', x: 0 }} exit={{ opacity: 0, height: 0 }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, marginLeft: '8px' }}
+                    initial={{ opacity: 0, y: -5, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: -5, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ overflow: 'hidden' }} // Важно для анимации высоты
                 >
-                    <ErrorOutlineRoundedIcon fontSize="inherit" /> {error}
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 1,
+                        mt: 0.5, p: 1, px: 1.5,
+                        borderRadius: '12px',
+                        // Стиль "Error Bubble"
+                        bgcolor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
+                        color: '#ef4444',
+                        border: '1px solid',
+                        borderColor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.3)' : '#fecaca',
+                    }}>
+                        <ErrorOutlineRoundedIcon fontSize="small" />
+                        <Typography variant="caption" fontWeight={700}>
+                            {error}
+                        </Typography>
+                    </Box>
                 </motion.div>
             )}
         </AnimatePresence>

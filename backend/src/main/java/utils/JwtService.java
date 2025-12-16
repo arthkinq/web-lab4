@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.security.Key;
-import java.nio.charset.StandardCharsets; // Добавь импорт
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @ApplicationScoped

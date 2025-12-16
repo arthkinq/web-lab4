@@ -4,10 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { loginSuccess } from '../redux/authSlice';
 import { toggleTheme } from '../redux/themeSlice';
 import api from '../api/axiosConfig';
-import { Container, Paper, Button, Typography, Box, IconButton, InputAdornment, CssBaseline } from '@mui/material';
+import {
+    Container,
+    Paper,
+    Button,
+    Typography,
+    Box,
+    IconButton,
+    InputAdornment,
+    CssBaseline,
+    Tooltip
+} from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Иконки
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
@@ -16,7 +25,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import SchoolIcon from '@mui/icons-material/School'; // Добавлена иконка
+import SchoolIcon from '@mui/icons-material/School';
 
 import BackgroundBlobs from '../components/BackgroundBlobs';
 import CustomInput from '../components/CustomInput';
@@ -53,12 +62,13 @@ const StartPage = () => {
 
         setError('');
         try {
-            if (isRegister) await api.post('/auth/register', { login, password });
-            const response = await api.post('/auth/login', { login, password });
+            const endpoint = isRegister ? '/auth/register' : '/auth/login';
+            const response = await api.post(endpoint, { login, password });
             dispatch(loginSuccess({ token: response.data.token, username: login }));
             navigate('/main');
         } catch (err) {
-            setError(typeof err.response?.data === 'string' ? err.response.data : 'Ошибка операции');
+            const msg = err.response?.data;
+            setError(typeof msg === 'string' ? msg : 'Ошибка операции');
         }
     };
 
@@ -86,13 +96,11 @@ const StartPage = () => {
             <CssBaseline />
             <BackgroundBlobs darkMode={darkMode} />
 
-            {/* --- ШАПКА (HEADER) --- */}
             <Box sx={{
                 position: 'absolute', top: 0, left: 0, width: '100%',
                 p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                 zIndex: 30
             }}>
-                {/* Информация о студенте */}
                 <Box sx={{
                     display: 'flex', flexDirection: 'column', gap: 0.5,
                     p: 2, borderRadius: '20px',
@@ -109,24 +117,38 @@ const StartPage = () => {
                             <SchoolIcon fontSize="inherit" /> P3222
                         </Typography>
                         <Typography variant="caption" fontWeight={600}>
-                            Вар. 74899
+                            Вар. 74923
                         </Typography>
                     </Box>
                 </Box>
 
-                {/* Переключатель темы */}
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <IconButton onClick={() => dispatch(toggleTheme())} sx={{ bgcolor: darkMode ? '#1e293b' : 'white', color: darkMode ? '#fbbf24' : '#f59e0b', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: 44, height: 44 }}>
-                        <AnimatePresence mode='wait'>
-                            <motion.div key={darkMode ? 'dark' : 'light'} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
+                <Tooltip title="Сменить тему">
+                    <IconButton
+                        onClick={() => dispatch(toggleTheme())}
+                        sx={{
+                            color: theme.subText,
+                            width: 44, height: 44,
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            '&:hover': { bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
+                        }}
+                    >
+                        <AnimatePresence mode='wait' initial={false}>
+                            <motion.div
+                                key={darkMode ? 'dark' : 'light'}
+                                initial={{ y: -20, opacity: 0, rotate: -45 }}
+                                animate={{ y: 0, opacity: 1, rotate: 0 }}
+                                exit={{ y: 20, opacity: 0, rotate: 45 }}
+                                transition={{ duration: 0.2 }}
+                                style={{ display: 'flex' }}
+                            >
                                 {darkMode ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
                             </motion.div>
                         </AnimatePresence>
                     </IconButton>
-                </motion.div>
+                </Tooltip>
             </Box>
 
-            {/* ФОРМА */}
             <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 10 }}>
                 <Paper
                     component={motion.div} layout

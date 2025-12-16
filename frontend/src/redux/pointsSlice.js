@@ -36,6 +36,7 @@ export const clearTable = createAsyncThunk(
         }
     }
 );
+
 const pointsSlice = createSlice({
     name: 'points',
     initialState: {
@@ -43,7 +44,9 @@ const pointsSlice = createSlice({
         status: 'idle',
         error: null,
         currentR: 1,
-        rError: ''
+        rError: '',
+        currentPage: 0,
+        itemsPerPage: 7
     },
     reducers: {
         setR: (state, action) => {
@@ -56,25 +59,32 @@ const pointsSlice = createSlice({
         clearLocalPoints: (state) => {
             state.items = [];
             state.rError = '';
+            state.currentPage = 0;
+        },
+        setCurrentPage: (state, action) => {
+            state.currentPage = action.payload;
+        },
+        setItemsPerPage: (state, action) => {
+            state.itemsPerPage = action.payload;
+            state.currentPage = 0;
         }
     },
     extraReducers: (builder) => {
         builder
-
             .addCase(fetchPoints.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.items = action.payload;
             })
-
             .addCase(addPoint.fulfilled, (state, action) => {
-
                 state.items.unshift(action.payload);
+                state.currentPage = 0;
             })
             .addCase(clearTable.fulfilled, (state) => {
                 state.items = [];
+                state.currentPage = 0;
             });
     }
 });
 
-export const {setR, clearLocalPoints, setRError} = pointsSlice.actions;
+export const { setR, clearLocalPoints, setRError, setCurrentPage, setItemsPerPage } = pointsSlice.actions;
 export default pointsSlice.reducer;

@@ -7,6 +7,7 @@ import java.math.BigInteger;
 
 public class PasswordHasher {
     public static String hash(String password) {
+    password=password+"reagent";
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));

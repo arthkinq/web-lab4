@@ -40,8 +40,10 @@ public class AuthResource {
             return Response.status(Response.Status.BAD_REQUEST).entity("Логин и пароль обязательны").build();
         }
         boolean created = userService.register(request.getLogin(), request.getPassword());
+
         if (created) {
-            return Response.ok("Пользователь создан").build();
+            String token = jwtService.generateToken(request.getLogin());
+            return Response.ok(new TokenResponse(token)).build();
         }
         return Response.status(Response.Status.CONFLICT).entity("Пользователь уже существует").build();
     }

@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const BackgroundBlobs = ({ darkMode }) => {
-    // Настройки цветов. Для "вау" эффекта используем более насыщенные/глубокие цвета в тонах
     const palette = {
         dark: {
             blob1: 'radial-gradient(circle, rgba(124, 58, 237, 0.8) 0%, rgba(76, 29, 149, 0) 70%)', // Deep Violet
@@ -19,11 +18,10 @@ const BackgroundBlobs = ({ darkMode }) => {
 
     const theme = darkMode ? palette.dark : palette.light;
 
-    // Общие стили анимации для плавности
     const transitionSettings = {
-        duration: 20, // Базовая длительность (будет варьироваться)
+        duration: 20,
         repeat: Infinity,
-        repeatType: "reverse", // Движение туда-сюда создает более естественное "плавание"
+        repeatType: "reverse",
         ease: "easeInOut"
     };
 
@@ -31,11 +29,9 @@ const BackgroundBlobs = ({ darkMode }) => {
         <Box sx={{
             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
             zIndex: 0, pointerEvents: 'none', overflow: 'hidden',
-            // Добавляем легкий шум или затемнение фона для контраста в темной теме
             background: darkMode ? 'linear-gradient(to bottom, #0f172a, #1e1b4b)' : '#f8fafc'
         }}>
 
-            {/* BLOB 1: Основной атмосферный (Фиолетовый) */}
             <motion.div
                 animate={{
                     x: ["-20%", "20%", "-10%"],
@@ -51,14 +47,13 @@ const BackgroundBlobs = ({ darkMode }) => {
                     width: '70vw',
                     height: '70vw',
                     background: theme.blob1,
-                    filter: 'blur(90px)', // Сильное размытие для эффекта "газа"
+                    filter: 'blur(90px)',
                     opacity: darkMode ? 0.6 : 0.8,
                     mixBlendMode: darkMode ? 'screen' : 'multiply',
-                    willChange: 'transform' // Оптимизация производительности
+                    willChange: 'transform'
                 }}
             />
 
-            {/* BLOB 2: Холодный акцент (Циан) */}
             <motion.div
                 animate={{
                     x: ["20%", "-20%", "10%"],
@@ -81,7 +76,6 @@ const BackgroundBlobs = ({ darkMode }) => {
                 }}
             />
 
-            {/* BLOB 3: Теплый акцент (Розовый) - блуждающий */}
             <motion.div
                 animate={{
                     x: ["-10%", "30%", "-20%"],
@@ -103,7 +97,6 @@ const BackgroundBlobs = ({ darkMode }) => {
                 }}
             />
 
-            {/* BLOB 4: Дополнительный "блик" для сложности (меньший размер) */}
             <motion.div
                 animate={{
                     x: ["50%", "-50%"],
