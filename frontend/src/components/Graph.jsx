@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPoint, setRError } from '../redux/pointsSlice';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import {motion, AnimatePresence, useAnimation, color} from 'framer-motion';
 import { IconButton, Typography, Box, Chip, useTheme, useMediaQuery, Slider } from '@mui/material';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
@@ -18,6 +18,8 @@ const Graph = () => {
     const dispatch = useDispatch();
     const darkMode = useSelector((state) => state.theme.darkMode);
     const { items: allPoints, currentR, currentPage, itemsPerPage } = useSelector((state) => state.points);
+    const currentUsername = useSelector((state) => state.auth.username); // Получаем имя текущего пользователя
+
     const points = allPoints.slice(
         currentPage * itemsPerPage,
         currentPage * itemsPerPage + itemsPerPage
@@ -77,6 +79,7 @@ const Graph = () => {
         pointMiss: '#ef4444',
         fullscreenBg: darkMode ? '#0f172a' : '#f8fafc',
         controlBg: darkMode ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+        yourPoint: '#ffd300',
 
     };
 
@@ -481,17 +484,31 @@ const Graph = () => {
                                 </>
                             )}
 
-                            {currentR >= 1 && points.map((p, i) => (
-                                <circle
-                                    key={i}
-                                    cx={(p.x / currentR) * BASE_SCALE}
-                                    cy={-(p.y / currentR) * BASE_SCALE}
-                                    r={4 / transform.k}
-                                    fill={p.hit ? colors.pointHit : colors.pointMiss}
-                                    stroke={colors.bg}
-                                    strokeWidth={1 / transform.k}
-                                />
-                            ))}
+                            {points.slice().sort((a, b) => {
+                                const aIsMe = a.user?.username === currentUsername;
+                                const bIsMe = b.user?.username === currentUsername;
+                                return aIsMe === bIsMe ? 0 : aIsMe ? 1 : -1;
+                            }).map((p, i) => {
+                                const isMe = p.user?.username === currentUsername;
+
+                                return (
+                                    <circle
+                                        key={p.id || i}
+                                        cx={(p.x / currentR) * BASE_SCALE}
+                                        cy={-(p.y / currentR) * BASE_SCALE}
+                                        r={(isMe ? 4 : 3.5) / transform.k}
+
+                                        fill={p.hit ? colors.pointHit : colors.pointMiss}
+                                        fillOpacity={isMe ? 1 : 0.4}
+                                        stroke={isMe ? (darkMode ? "#fff" : "#334155") : colors.bg}
+                                        strokeWidth={(isMe ? 2 : 1) / transform.k}
+                                        style={{
+                                            filter: isMe ? 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))' : 'none',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    />
+                                );
+                            })}
                         </g>
                     </g>
                 </svg>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearTable, setCurrentPage } from '../redux/pointsSlice'; // setItemsPerPage больше не нужен здесь
+import { clearTable, setCurrentPage } from '../redux/pointsSlice';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, Box, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
@@ -16,6 +16,7 @@ import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded'; // Иконка для себя
 
 const formatDate = (dateData) => {
     if (!dateData) return "—";
@@ -32,6 +33,7 @@ const ResultsTable = () => {
     const dispatch = useDispatch();
     const { items: points, currentPage, itemsPerPage } = useSelector((state) => state.points);
     const darkMode = useSelector((state) => state.theme.darkMode);
+    const currentUsername = useSelector((state) => state.auth.username); // Получаем имя текущего пользователя
 
     const [open, setOpen] = useState(false);
     const [isScrollable, setIsScrollable] = useState(false);
@@ -46,8 +48,6 @@ const ResultsTable = () => {
     const handleChangePage = (event, newPage) => {
         dispatch(setCurrentPage(newPage));
     };
-
-    // handleChangeRowsPerPage больше не нужен, так как мы фиксируем число
 
     const visibleRows = points.slice(
         currentPage * itemsPerPage,
@@ -64,6 +64,7 @@ const ResultsTable = () => {
         rowHover: darkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.5)',
         iconBg: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#eff6ff',
         dialogBg: darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        currentUserText: darkMode ? '#818cf8' : '#4f46e5' // Цвет для своего имени
     };
 
     const containerVariants = {
@@ -163,101 +164,105 @@ const ResultsTable = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            visibleRows.map((row) => (
-                                <TableRow
-                                    key={row.id} hover
-                                    sx={{
-                                        '&:last-child td, &:last-child th': { border: 0 },
-                                        transition: 'background 0.2s',
-                                        '&:hover': { bgcolor: theme.rowHover },
-                                        animation: 'fadeInRow 0.3s ease-out forwards',
-                                        '@keyframes fadeInRow': { from: { opacity: 0 }, to: { opacity: 1 } }
-                                    }}
-                                >
-                                    <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{Number(row.x).toFixed(3)}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{Number(row.y).toFixed(3)}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{row.r}</TableCell>
+                            visibleRows.map((row) => {
+                                // ПРОВЕРКА НА ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
+                                const isMe = row.user?.username === currentUsername;
 
-                                    <TableCell sx={{ borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
-                                        <Chip
-                                            icon={row.hit ? <CheckCircleRoundedIcon /> : <CancelRoundedIcon />}
-                                            label={row.hit ? 'Попал' : 'Мимо'}
-                                            size="small"
-                                            variant={row.hit ? 'filled' : 'outlined'}
-                                            sx={{
-                                                fontWeight: 700, borderRadius: '8px',
-                                                ...(row.hit ? {
-                                                    bgcolor: darkMode ? 'rgba(22, 101, 52, 0.3)' : '#dcfce7', color: darkMode ? '#4ade80' : '#166534',
-                                                    '& .MuiChip-icon': { color: darkMode ? '#4ade80' : '#166534' }
-                                                } : {
-                                                    borderColor: darkMode ? 'rgba(239, 68, 68, 0.5)' : '#fee2e2', color: darkMode ? '#f87171' : '#b91c1c', bgcolor: darkMode ? 'rgba(185, 28, 28, 0.1)' : '#fef2f2',
-                                                    '& .MuiChip-icon': { color: '#ef4444' }
-                                                })
-                                            }}
-                                        />
-                                    </TableCell>
+                                return (
+                                    <TableRow
+                                        key={row.id}
+                                        hover
+                                        // ОСТАВЛЯЕМ ТОЛЬКО ПРОСТУЮ АНИМАЦИЮ ПОЯВЛЕНИЯ
+                                        // Убираем AnimatePresence и layout, чтобы не было скачков
+                                        component={motion.tr}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
 
-                                    <TableCell sx={{ color: theme.text, fontWeight: 600, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <PersonRoundedIcon sx={{ fontSize: 16, color: theme.subText }} />
-                                            {row.user?.username || '—'}
-                                        </Box>
-                                    </TableCell>
+                                        sx={{
+                                            '&:last-child td, &:last-child th': { border: 0 },
+                                            transition: 'background 0.2s',
+                                            '&:hover': { bgcolor: theme.rowHover },
+                                            // Если это мои строки, можно их чуть подсветить фоном (опционально)
+                                            bgcolor: isMe && darkMode ? 'rgba(99, 102, 241, 0.05)' : (isMe ? '#f5f3ff' : 'transparent')
+                                        }}
+                                    >
+                                        <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{Number(row.x).toFixed(3)}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{Number(row.y).toFixed(3)}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: theme.text, borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>{row.r}</TableCell>
 
-                                    <TableCell sx={{ color: theme.subText, fontFamily: 'monospace', fontSize: '0.85rem', borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <AccessTimeRoundedIcon fontSize="inherit" />
-                                            {formatDate(row.timestamp)}
-                                        </Box>
-                                    </TableCell>
+                                        <TableCell sx={{ borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
+                                            <Chip
+                                                icon={row.hit ? <CheckCircleRoundedIcon /> : <CancelRoundedIcon />}
+                                                label={row.hit ? 'Попал' : 'Мимо'}
+                                                size="small"
+                                                variant={row.hit ? 'filled' : 'outlined'}
+                                                sx={{
+                                                    fontWeight: 700, borderRadius: '8px',
+                                                    ...(row.hit ? {
+                                                        bgcolor: darkMode ? 'rgba(22, 101, 52, 0.3)' : '#dcfce7', color: darkMode ? '#4ade80' : '#166534',
+                                                        '& .MuiChip-icon': { color: darkMode ? '#4ade80' : '#166534' }
+                                                    } : {
+                                                        borderColor: darkMode ? 'rgba(239, 68, 68, 0.5)' : '#fee2e2', color: darkMode ? '#f87171' : '#b91c1c', bgcolor: darkMode ? 'rgba(185, 28, 28, 0.1)' : '#fef2f2',
+                                                        '& .MuiChip-icon': { color: '#ef4444' }
+                                                    })
+                                                }}
+                                            />
+                                        </TableCell>
 
-                                    <TableCell sx={{ color: theme.subText, fontFamily: 'monospace', fontSize: '0.85rem', borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <CodeRoundedIcon fontSize="inherit" />
-                                            {(row.executionTime / 1000000).toFixed(2)} ms
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                                        {/* --- КОЛОНКА ПОЛЬЗОВАТЕЛЬ (ВЫДЕЛЕНИЕ) --- */}
+                                        <TableCell sx={{ borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
+                                            <Box sx={{
+                                                display: 'flex', alignItems: 'center', gap: 1,
+                                                // Цвет для себя - яркий, для остальных - обычный текст
+                                                color: isMe ? theme.currentUserText : theme.text,
+                                                fontWeight: isMe ? 800 : 600
+                                            }}>
+                                                {isMe ? (
+                                                    <StarRoundedIcon sx={{ fontSize: 18, color: theme.currentUserText }} />
+                                                ) : (
+                                                    <PersonRoundedIcon sx={{ fontSize: 16, color: theme.subText }} />
+                                                )}
+                                                {row.user?.username || '—'}
+                                            </Box>
+                                        </TableCell>
+
+                                        <TableCell sx={{ color: theme.subText, fontFamily: 'monospace', fontSize: '0.85rem', borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <AccessTimeRoundedIcon fontSize="inherit" />
+                                                {formatDate(row.timestamp)}
+                                            </Box>
+                                        </TableCell>
+
+                                        <TableCell sx={{ color: theme.subText, fontFamily: 'monospace', fontSize: '0.85rem', borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <CodeRoundedIcon fontSize="inherit" />
+                                                {(row.executionTime / 1000000).toFixed(2)} ms
+                                            </Box>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            {/* --- ПАГИНАЦИЯ (УПРОЩЕННАЯ) --- */}
             <TablePagination
                 component="div"
                 count={points.length}
                 page={currentPage}
                 onPageChange={handleChangePage}
                 rowsPerPage={itemsPerPage}
-                // Передаем пустой массив, чтобы скрыть выпадающий список
                 rowsPerPageOptions={[]}
-                // Убираем текст "Строк:"
                 labelRowsPerPage=""
-
                 sx={{
                     color: theme.subText,
                     borderTop: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
                     overflow: 'hidden',
-
-                    // Центрируем оставшиеся элементы (текст "1-10 из 50" и стрелочки)
-                    '.MuiTablePagination-toolbar': {
-                        minHeight: '52px',
-                        paddingLeft: 2,
-                        paddingRight: 2,
-                        justifyContent: 'center' // Центрирование
-                    },
-
-                    // Скрываем лишние отступы, если они остались
-                    '.MuiTablePagination-spacer': {
-                        display: 'none'
-                    },
-
-                    '.MuiTablePagination-actions button': {
-                        color: theme.text,
-                        '&.Mui-disabled': { opacity: 0.3 }
-                    }
+                    '.MuiTablePagination-toolbar': { minHeight: '52px', paddingLeft: 2, paddingRight: 2, justifyContent: 'center' },
+                    '.MuiTablePagination-spacer': { display: 'none' },
+                    '.MuiTablePagination-actions button': { color: theme.text, '&.Mui-disabled': { opacity: 0.3 } }
                 }}
             />
 

@@ -67,6 +67,15 @@ const pointsSlice = createSlice({
         setItemsPerPage: (state, action) => {
             state.itemsPerPage = action.payload;
             state.currentPage = 0;
+        },
+        socketAddPoint: (state, action) => {
+            const exists = state.items.some(p => p.id === action.payload.id);
+            if (!exists) state.items.unshift(action.payload);
+        },
+        socketClearPoints: (state, action) => {
+            const usernameToClear = action.payload;
+            state.items = state.items.filter(p => p.user?.username !== usernameToClear);
+            state.currentPage = 0;
         }
     },
     extraReducers: (builder) => {
@@ -76,7 +85,10 @@ const pointsSlice = createSlice({
                 state.items = action.payload;
             })
             .addCase(addPoint.fulfilled, (state, action) => {
-                state.items.unshift(action.payload);
+                const exists = state.items.some(p => p.id === action.payload.id);
+                if (!exists) {
+                    state.items.unshift(action.payload);
+                }
                 state.currentPage = 0;
             })
             .addCase(clearTable.fulfilled, (state) => {
@@ -86,5 +98,8 @@ const pointsSlice = createSlice({
     }
 });
 
-export const { setR, clearLocalPoints, setRError, setCurrentPage, setItemsPerPage } = pointsSlice.actions;
+export const {
+    setR, clearLocalPoints, setRError, setCurrentPage, setItemsPerPage,
+    socketAddPoint, socketClearPoints
+} = pointsSlice.actions;
 export default pointsSlice.reducer;

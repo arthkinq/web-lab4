@@ -28,9 +28,8 @@ public class ResultService {
         return result;
     }
 
-    public List<Result> getUserResults(User user) {
-        return em.createQuery("SELECT r FROM Result r WHERE r.user.id = :userId ORDER BY r.id DESC", Result.class)
-                .setParameter("userId", user.getId())
+    public List<Result> getAllResults() {
+        return em.createQuery("SELECT r FROM Result r ORDER BY r.id DESC", Result.class)
                 .getResultList();
     }
 
