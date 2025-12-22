@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginSuccess } from '../redux/authSlice';
@@ -29,14 +29,18 @@ import SchoolIcon from '@mui/icons-material/School';
 
 import BackgroundBlobs from '../components/BackgroundBlobs';
 import CustomInput from '../components/CustomInput';
+import ThemeToggle from "../components/ThemeToggle.jsx";
 
 const StartPage = () => {
+
     const [isRegister, setIsRegister] = useState(false);
     const [login, setLogin] = useState(localStorage.getItem('remembered_login') || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-
+    useEffect(() => {
+        document.title = "Вход | Web Lab 4";
+    }, []);
     const passwordInputRef = useRef(null);
 
     const darkMode = useSelector((state) => state.theme.darkMode);
@@ -122,31 +126,7 @@ const StartPage = () => {
                     </Box>
                 </Box>
 
-                <Tooltip title="Сменить тему">
-                    <IconButton
-                        onClick={() => dispatch(toggleTheme())}
-                        sx={{
-                            color: theme.subText,
-                            width: 44, height: 44,
-                            borderRadius: '50%',
-                            overflow: 'hidden',
-                            '&:hover': { bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }
-                        }}
-                    >
-                        <AnimatePresence mode='wait' initial={false}>
-                            <motion.div
-                                key={darkMode ? 'dark' : 'light'}
-                                initial={{ y: -20, opacity: 0, rotate: -45 }}
-                                animate={{ y: 0, opacity: 1, rotate: 0 }}
-                                exit={{ y: 20, opacity: 0, rotate: 45 }}
-                                transition={{ duration: 0.2 }}
-                                style={{ display: 'flex' }}
-                            >
-                                {darkMode ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-                            </motion.div>
-                        </AnimatePresence>
-                    </IconButton>
-                </Tooltip>
+                <ThemeToggle />
             </Box>
 
             <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 10 }}>
@@ -211,7 +191,7 @@ const StartPage = () => {
                                 }}
                                 startIcon={isRegister ? <PersonAddRoundedIcon /> : <LoginRoundedIcon />}
                             >
-                                {isRegister ? 'Войти' : 'Войти'}
+                                {isRegister ? 'Зарегестрироваться' : 'Войти'}
                             </Button>
                         </motion.div>
                     </Box>

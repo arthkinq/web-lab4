@@ -4,17 +4,15 @@ import { addPoint, setR, setRError } from '../redux/pointsSlice';
 import { Paper, Typography, TextField, Button, Box, InputAdornment } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Иконки
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import AdsClickRoundedIcon from '@mui/icons-material/AdsClickRounded'; // Для X
-import HeightRoundedIcon from '@mui/icons-material/HeightRounded';     // Для Y
-import RadarRoundedIcon from '@mui/icons-material/RadarRounded';       // Для R
+import AdsClickRoundedIcon from '@mui/icons-material/AdsClickRounded';
+import HeightRoundedIcon from '@mui/icons-material/HeightRounded';
+import RadarRoundedIcon from '@mui/icons-material/RadarRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 
 const PointForm = () => {
     const dispatch = useDispatch();
 
-    // --- REDUX STATE ---
     const currentR = useSelector((state) => state.points.currentR);
     const globalRError = useSelector((state) => state.points.rError);
     const darkMode = useSelector((state) => state.theme.darkMode);
@@ -24,7 +22,6 @@ const PointForm = () => {
     const [rLocal, setRLocal] = useState(currentR);
     const [localErrors, setLocalErrors] = useState({ y: '', r: '' });
 
-    // --- ПАЛИТРА ТЕМЫ ---
     const theme = {
         cardBg: darkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.8)',
         border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.6)',
@@ -41,10 +38,8 @@ const PointForm = () => {
         setRLocal(currentR);
     }, [currentR]);
 
-    // --- ВАЛИДАЦИЯ И ЛОГИКА ---
     const handleRChange = (val) => {
         const numVal = Number(val);
-        // Валидация R сразу при клике
         if (numVal <= 0) {
             dispatch(setRError('R должен быть > 0'));
         } else {
@@ -88,10 +83,8 @@ const PointForm = () => {
     };
 
     const xValues = ['-2','-1.5','-1','-0.5','0','0.5','1','1.5'];
-    // Добавим значения для R кнопок, раз уж мы делаем интерфейс консистентным
     const rValues = ['-4','-3','-2','-1','0','1', '2', '3', '4'];
 
-    // --- АНИМАЦИЯ ---
     const containerVariants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.1, duration: 0.5, type: 'spring' } }
@@ -132,7 +125,6 @@ const PointForm = () => {
                 </Typography>
             </motion.div>
 
-            {/* ВЫБОР X */}
             <motion.div variants={itemVariants}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                     <AdsClickRoundedIcon fontSize="small" sx={{ color: theme.iconColor }} />
@@ -151,10 +143,9 @@ const PointForm = () => {
                                 onClick={() => setX(Number(v))}
                                 style={{
                                     border: 'none', outline: 'none', cursor: 'pointer',
-                                    // ИСПРАВЛЕНИЕ: Фиксированная ширина и высота
                                     width: '54px',
                                     height: '42px',
-                                    padding: 0, // Убираем паддинг, центрируем через Flex
+                                    padding: 0,
                                     display: 'flex', justifyContent: 'center', alignItems: 'center',
 
                                     borderRadius: '14px',
@@ -174,7 +165,6 @@ const PointForm = () => {
                 </Box>
             </motion.div>
 
-            {/* INPUT Y */}
             <motion.div variants={itemVariants}>
                 <CustomTextField
                     label="Ось Y" placeholder="-5 ... 5" value={y}
@@ -183,11 +173,6 @@ const PointForm = () => {
                     theme={theme}
                 />
             </motion.div>
-
-            {/* ВЫБОР R (КНОПКИ ВМЕСТО INPUT для красоты, или оставь инпут, если так нужно по заданию) */}
-            {/* Если по заданию нужен именно Input для R, то оставь CustomTextField ниже.
-                Но раз мы делали слайдер на графике, логично сделать кнопки и здесь.
-                Ниже пример кнопок для R. */}
 
             <motion.div variants={itemVariants}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -207,7 +192,6 @@ const PointForm = () => {
                                 onClick={() => handleRChange(v)}
                                 style={{
                                     border: 'none', outline: 'none', cursor: 'pointer',
-                                    // ИСПРАВЛЕНИЕ: Фиксированная ширина и высота
                                     width: '54px',
                                     height: '42px',
                                     padding: 0,
@@ -215,7 +199,6 @@ const PointForm = () => {
 
                                     borderRadius: '14px',
                                     fontSize: '0.9rem', fontWeight: isSelected ? 800 : 600,
-                                    // Цвет зависит от валидности R (если вдруг придет 0)
                                     background: isSelected
                                         ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
                                         : theme.btnInactiveBg,
@@ -230,7 +213,6 @@ const PointForm = () => {
                     })}
                 </Box>
 
-                {/* Сообщение об ошибке R */}
                 <AnimatePresence>
                     {globalRError && (
                         <motion.div
@@ -244,7 +226,6 @@ const PointForm = () => {
                                 display: 'flex', alignItems: 'center', gap: 1,
                                 mt: 1, p: 1, px: 1.5,
                                 borderRadius: '12px',
-                                // Тот же стиль, что и в инпутах
                                 bgcolor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
                                 color: '#ef4444',
                                 border: '1px solid',
@@ -260,7 +241,6 @@ const PointForm = () => {
                 </AnimatePresence>
             </motion.div>
 
-            {/* КНОПКА */}
             <motion.div variants={itemVariants}>
                 <Button
                     fullWidth variant="contained" size="large" onClick={handleSubmit}
@@ -282,10 +262,8 @@ const PointForm = () => {
     );
 };
 
-// --- CustomTextField Component ---
 const CustomTextField = ({ label, value, onChange, error, placeholder, icon, theme }) => (
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-        {/* Метка с иконкой */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
             {React.cloneElement(icon, { fontSize: 'small', sx: { color: error ? '#ef4444' : theme.iconColor, transition: 'color 0.3s' } })}
             <Typography variant="subtitle2" fontWeight={700} sx={{ color: error ? '#ef4444' : theme.textSecondary, transition: 'color 0.3s' }}>
@@ -301,13 +279,11 @@ const CustomTextField = ({ label, value, onChange, error, placeholder, icon, the
             placeholder={placeholder}
             error={!!error}
             autoComplete="off"
-            // Отключаем стандартный helperText, так как делаем свой
             helperText={null}
             InputProps={{
                 disableUnderline: true,
                 sx: {
                     borderRadius: '16px',
-                    // Фон меняется при ошибке
                     bgcolor: error
                         ? (theme.inputBg === '#0f172a' ? 'rgba(127, 29, 29, 0.15)' : '#fff1f2')
                         : theme.inputBg,
@@ -332,8 +308,6 @@ const CustomTextField = ({ label, value, onChange, error, placeholder, icon, the
                 }
             }}
         />
-
-        {/* --- КАСТОМНЫЙ БЛОК ОШИБКИ --- */}
         <AnimatePresence>
             {error && (
                 <motion.div
@@ -347,7 +321,6 @@ const CustomTextField = ({ label, value, onChange, error, placeholder, icon, the
                         display: 'flex', alignItems: 'center', gap: 1,
                         mt: 0.5, p: 1, px: 1.5,
                         borderRadius: '12px',
-                        // Стиль "Error Bubble"
                         bgcolor: theme.inputBg === '#0f172a' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2',
                         color: '#ef4444',
                         border: '1px solid',

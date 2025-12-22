@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 
-// Иконки
 import DeleteSweepRoundedIcon from '@mui/icons-material/DeleteSweepRounded';
 import HistoryEduRoundedIcon from '@mui/icons-material/HistoryEduRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
@@ -16,7 +15,7 @@ import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import StarRoundedIcon from '@mui/icons-material/StarRounded'; // Иконка для себя
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 
 const formatDate = (dateData) => {
     if (!dateData) return "—";
@@ -33,8 +32,7 @@ const ResultsTable = () => {
     const dispatch = useDispatch();
     const { items: points, currentPage, itemsPerPage } = useSelector((state) => state.points);
     const darkMode = useSelector((state) => state.theme.darkMode);
-    const currentUsername = useSelector((state) => state.auth.username); // Получаем имя текущего пользователя
-
+    const currentUsername = useSelector((state) => state.auth.username);
     const [open, setOpen] = useState(false);
     const [isScrollable, setIsScrollable] = useState(false);
 
@@ -64,7 +62,7 @@ const ResultsTable = () => {
         rowHover: darkMode ? 'rgba(51, 65, 85, 0.5)' : 'rgba(241, 245, 249, 0.5)',
         iconBg: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#eff6ff',
         dialogBg: darkMode ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        currentUserText: darkMode ? '#818cf8' : '#4f46e5' // Цвет для своего имени
+        currentUserText: darkMode ? '#818cf8' : '#4f46e5'
     };
 
     const containerVariants = {
@@ -93,7 +91,6 @@ const ResultsTable = () => {
                 transform: 'translate3d(0,0,0)'
             }}
         >
-            {/* HEADER */}
             <Box sx={{
                 p: 2, px: 3,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -124,7 +121,6 @@ const ResultsTable = () => {
                 )}
             </Box>
 
-            {/* TABLE CONTAINER */}
             <TableContainer sx={{
                 flexGrow: 1,
                 overflowY: isScrollable ? 'auto' : 'hidden',
@@ -165,15 +161,12 @@ const ResultsTable = () => {
                             </TableRow>
                         ) : (
                             visibleRows.map((row) => {
-                                // ПРОВЕРКА НА ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
                                 const isMe = row.user?.username === currentUsername;
 
                                 return (
                                     <TableRow
                                         key={row.id}
                                         hover
-                                        // ОСТАВЛЯЕМ ТОЛЬКО ПРОСТУЮ АНИМАЦИЮ ПОЯВЛЕНИЯ
-                                        // Убираем AnimatePresence и layout, чтобы не было скачков
                                         component={motion.tr}
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
@@ -183,7 +176,6 @@ const ResultsTable = () => {
                                             '&:last-child td, &:last-child th': { border: 0 },
                                             transition: 'background 0.2s',
                                             '&:hover': { bgcolor: theme.rowHover },
-                                            // Если это мои строки, можно их чуть подсветить фоном (опционально)
                                             bgcolor: isMe && darkMode ? 'rgba(99, 102, 241, 0.05)' : (isMe ? '#f5f3ff' : 'transparent')
                                         }}
                                     >
@@ -210,11 +202,9 @@ const ResultsTable = () => {
                                             />
                                         </TableCell>
 
-                                        {/* --- КОЛОНКА ПОЛЬЗОВАТЕЛЬ (ВЫДЕЛЕНИЕ) --- */}
                                         <TableCell sx={{ borderBottom: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(224, 224, 224, 1)' }}>
                                             <Box sx={{
                                                 display: 'flex', alignItems: 'center', gap: 1,
-                                                // Цвет для себя - яркий, для остальных - обычный текст
                                                 color: isMe ? theme.currentUserText : theme.text,
                                                 fontWeight: isMe ? 800 : 600
                                             }}>

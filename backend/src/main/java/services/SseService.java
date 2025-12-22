@@ -45,7 +45,7 @@ public class SseService {
 
         try {
             broadcaster.broadcast(sse.newEventBuilder()
-                    .name("clear") // Имя события
+                    .name("clear")
                     .mediaType(MediaType.TEXT_PLAIN_TYPE)
                     .data(String.class, username)
                     .build());

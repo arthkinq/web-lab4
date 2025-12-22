@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { addPoint, setRError } from '../redux/pointsSlice';
-import {motion, AnimatePresence, useAnimation, color} from 'framer-motion';
-import { IconButton, Typography, Box, Chip, useTheme, useMediaQuery, Slider } from '@mui/material';
+import React, {useState, useRef, useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {addPoint, setRError} from '../redux/pointsSlice';
+import {useAnimation} from 'framer-motion';
+import {IconButton, Typography, Box, Chip, useTheme, useMediaQuery, Slider} from '@mui/material';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import {motion} from 'framer-motion';
 
 const SVG_SIZE = 300;
 const AXIS_OFFSET = SVG_SIZE / 2;
@@ -17,8 +18,8 @@ const MIN_ZOOM = 0.5;
 const Graph = () => {
     const dispatch = useDispatch();
     const darkMode = useSelector((state) => state.theme.darkMode);
-    const { items: allPoints, currentR, currentPage, itemsPerPage } = useSelector((state) => state.points);
-    const currentUsername = useSelector((state) => state.auth.username); // Получаем имя текущего пользователя
+    const {items: allPoints, currentR, currentPage, itemsPerPage} = useSelector((state) => state.points);
+    const currentUsername = useSelector((state) => state.auth.username);
 
     const points = allPoints.slice(
         currentPage * itemsPerPage,
@@ -28,8 +29,8 @@ const Graph = () => {
 
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    const [transform, setTransformState] = useState({ x: 0, y: 0, k: 1 });
-    const transformRef = useRef({ x: 0, y: 0, k: 1 });
+    const [transform, setTransformState] = useState({x: 0, y: 0, k: 1});
+    const transformRef = useRef({x: 0, y: 0, k: 1});
 
     const [cursorCoords, setCursorCoords] = useState(null);
 
@@ -46,8 +47,8 @@ const Graph = () => {
             return;
         }
         controls.start({
-            filter: ["blur(10px)", "blur(0px)"], // От размытого к четкому
-            transition: { duration: 0.4, ease: "easeOut" }
+            filter: ["blur(10px)", "blur(0px)"],
+            transition: {duration: 0.4, ease: "easeOut"}
         });
     }, [isFullscreen, controls]);
 
@@ -92,7 +93,8 @@ const Graph = () => {
         if (!svgRef.current) return null;
         const svg = svgRef.current;
         let pt = svg.createSVGPoint();
-        pt.x = clientX; pt.y = clientY;
+        pt.x = clientX;
+        pt.y = clientY;
 
         const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
 
@@ -100,11 +102,11 @@ const Graph = () => {
         const mathX = ((svgP.x - t.x) / t.k - AXIS_OFFSET) / BASE_SCALE * currentR;
         const mathY = -((svgP.y - t.y) / t.k - AXIS_OFFSET) / BASE_SCALE * currentR;
 
-        return { x: mathX, y: mathY };
+        return {x: mathX, y: mathY};
     };
 
     const animateViewTo = (targetX, targetY, targetK) => {
-        const start = { ...transformRef.current };
+        const start = {...transformRef.current};
         const startTime = performance.now();
         const duration = 400; // ms
 
@@ -134,7 +136,7 @@ const Graph = () => {
         if (isFullscreen) {
             animateViewTo(0, 0, INITIAL_ZOOM);
         } else {
-            setTransform({ x: 0, y: 0, k: 1 });
+            setTransform({x: 0, y: 0, k: 1});
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         }
     }, [isFullscreen]);
@@ -161,10 +163,10 @@ const Graph = () => {
             const newX = mx - (mx - t.x) * (newK / t.k);
             const newY = my - (my - t.y) * (newK / t.k);
 
-            setTransform({ k: newK, x: newX, y: newY });
+            setTransform({k: newK, x: newX, y: newY});
         };
 
-        el.addEventListener('wheel', handleWheel, { passive: false });
+        el.addEventListener('wheel', handleWheel, {passive: false});
         return () => el.removeEventListener('wheel', handleWheel);
     }, [isFullscreen]);
 
@@ -248,7 +250,7 @@ const Graph = () => {
     };
 
     const onTouchMove = (e) => {
-        if(isFullscreen && e.cancelable) e.preventDefault();
+        if (isFullscreen && e.cancelable) e.preventDefault();
 
         const ds = dragStartRef.current;
         const ps = pinchStartRef.current;
@@ -283,7 +285,7 @@ const Graph = () => {
             const newX = mx - (mx - ps.tx) * (newK / ps.k);
             const newY = my - (my - ps.ty) * (newK / ps.k);
 
-            setTransform({ k: newK, x: newX, y: newY });
+            setTransform({k: newK, x: newX, y: newY});
         }
     };
 
@@ -319,12 +321,12 @@ const Graph = () => {
         }
     };
 
-    const AxisLabel = ({ x, y, label }) => (
+    const AxisLabel = ({x, y, label}) => (
         <text
             x={x} y={y}
             fill={colors.text} fontSize="10" fontFamily="monospace"
             textAnchor="middle" dominantBaseline="middle"
-            style={{ pointerEvents: 'none', userSelect: 'none' }}
+            style={{pointerEvents: 'none', userSelect: 'none'}}
         >
             {label}
         </text>
@@ -361,50 +363,49 @@ const Graph = () => {
                     bgcolor: 'rgba(255,255,255,0.0)', borderBottom: 'none', pointerEvents: 'none'
                 })
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pointerEvents: 'auto' }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, pointerEvents: 'auto'}}>
                     <Chip
                         label={`R = ${Number(currentR).toFixed(1)}`}
                         size="small" color='primary'
-                        sx={{ boxShadow: isFullscreen ? '0 2px 5px rgba(0,0,0,0.2)' : 'none' }}
+                        sx={{boxShadow: isFullscreen ? '0 2px 5px rgba(0,0,0,0.2)' : 'none'}}
                     />
                     {isFullscreen && cursorCoords && !isMobile && (
-                        <Typography variant="caption" sx={{ fontFamily: 'monospace', color: colors.text }}>
+                        <Typography variant="caption" sx={{fontFamily: 'monospace', color: colors.text}}>
                             [{cursorCoords.x.toFixed(2)}, {cursorCoords.y.toFixed(2)}]
                         </Typography>
                     )}
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, pointerEvents: 'auto', alignItems: 'center' }}>
+                <Box sx={{display: 'flex', gap: 1, pointerEvents: 'auto', alignItems: 'center'}}>
                     {isFullscreen && !isMobile && (
                         <IconButton
                             onClick={() => animateViewTo(0, 0, INITIAL_ZOOM)}
                             sx={{
-                                width: 48,  // Жесткая ширина
-                                height: 48, // Жесткая высота
+                                width: 48,
+                                height: 48,
                                 color: colors.text,
                                 bgcolor: colors.grid,
                                 backdropFilter: 'blur(4px)',
                                 borderRadius: '50%',
-                                flexShrink: 0, // Запрещаем сжиматься
+                                flexShrink: 0,
                                 '&:hover': {
                                     bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
                                 }
                             }}
                         >
-                            {/* Иконку можно оставить small или medium, главное что кнопка теперь фиксированная */}
-                            <CenterFocusStrongIcon fontSize="small" />
+                            <CenterFocusStrongIcon fontSize="small"/>
                         </IconButton>
                     )}
 
                     <IconButton
                         onClick={() => setIsFullscreen(!isFullscreen)}
                         sx={{
-                            width: 48,  // Те же размеры для симметрии
+                            width: 48,
                             height: 48,
                             color: isFullscreen ? '#ef4444' : colors.text,
                             bgcolor: isFullscreen ? 'rgba(239, 68, 68, 0.1)' : colors.grid,
                             backdropFilter: 'blur(4px)',
-                            borderRadius: '50%', // Тоже делаем круглой для единообразия
+                            borderRadius: '50%',
                             flexShrink: 0,
                             '&:hover': {
                                 bgcolor: isFullscreen
@@ -413,14 +414,14 @@ const Graph = () => {
                             }
                         }}
                     >
-                        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                        {isFullscreen ? <FullscreenExitIcon/> : <FullscreenIcon/>}
                     </IconButton>
                 </Box>
             </Box>
 
             <Box
                 ref={zoomRef}
-                sx={{ flexGrow: 1, position: 'relative', touchAction: 'none', overflow: 'hidden' }}
+                sx={{flexGrow: 1, position: 'relative', touchAction: 'none', overflow: 'hidden'}}
                 onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp}
                 onMouseLeave={onMouseLeave}
                 onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
@@ -435,7 +436,8 @@ const Graph = () => {
                     </Box>
                 )}
 
-                <svg ref={svgRef} viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} width="100%" height="100%" style={{ display: 'block' }}>
+                <svg ref={svgRef} viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`} width="100%" height="100%"
+                     style={{display: 'block'}}>
                     <defs>
                         <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
                             <path d="M 50 0 L 0 0 0 50" fill="none" stroke={colors.grid} strokeWidth="1"/>
@@ -444,43 +446,55 @@ const Graph = () => {
 
                     <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k})`}>
                         <g transform={`translate(${AXIS_OFFSET}, ${AXIS_OFFSET})`}>
-                            <rect x="-2000" y="-2000" width="4000" height="4000" fill="url(#grid)" />
+                            <rect x="-2000" y="-2000" width="4000" height="4000" fill="url(#grid)"/>
 
                             {isRValid && (
                                 <>
-                                    <path d={`M 0 0 L 0 ${-BASE_SCALE/2} A ${BASE_SCALE/2} ${BASE_SCALE/2} 0 0 1 ${BASE_SCALE/2} 0 Z`}
-                                          fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill} strokeWidth="1" />
-                                    <rect x={-BASE_SCALE/2} y={-BASE_SCALE} width={BASE_SCALE/2} height={BASE_SCALE}
-                                          fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill} strokeWidth="1" />
+                                    <path
+                                        d={`M 0 0 L 0 ${-BASE_SCALE / 2} A ${BASE_SCALE / 2} ${BASE_SCALE / 2} 0 0 1 ${BASE_SCALE / 2} 0 Z`}
+                                        fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill}
+                                        strokeWidth="1"/>
+                                    <rect x={-BASE_SCALE / 2} y={-BASE_SCALE} width={BASE_SCALE / 2} height={BASE_SCALE}
+                                          fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill}
+                                          strokeWidth="1"/>
                                     <polygon points={`0,0 ${BASE_SCALE},0 0,${BASE_SCALE}`}
-                                             fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill} strokeWidth="1" />
+                                             fill={colors.figureFill} fillOpacity="0.25" stroke={colors.figureFill}
+                                             strokeWidth="1"/>
                                 </>
                             )}
 
-                            <line x1="-155" y1="0" x2="155" y2="0" stroke={colors.axis} strokeWidth="1.5" />
-                            <line x1="0" y1="-155" x2="0" y2="155" stroke={colors.axis} strokeWidth="1.5" />
-                            <polygon points="155,0 150,-3 150,3" fill={colors.axis} />
-                            <polygon points="0,-155 -3,-150 3,-150" fill={colors.axis} />
+                            <line x1="-155" y1="0" x2="155" y2="0" stroke={colors.axis} strokeWidth="1.5"/>
+                            <line x1="0" y1="-155" x2="0" y2="155" stroke={colors.axis} strokeWidth="1.5"/>
+                            <polygon points="155,0 150,-3 150,3" fill={colors.axis}/>
+                            <polygon points="0,-155 -3,-150 3,-150" fill={colors.axis}/>
 
                             {isRValid && (
                                 <>
-                                    <line x1={BASE_SCALE} y1="-3" x2={BASE_SCALE} y2="3" stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x={BASE_SCALE} y="15" label="R" />
-                                    <line x1={BASE_SCALE/2} y1="-3" x2={BASE_SCALE/2} y2="3" stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x={BASE_SCALE/2} y="15" label="R/2" />
-                                    <line x1={-BASE_SCALE} y1="-3" x2={-BASE_SCALE} y2="3" stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x={-BASE_SCALE} y="15" label="-R" />
-                                    <line x1={-BASE_SCALE/2} y1="-3" x2={-BASE_SCALE/2} y2="3" stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x={-BASE_SCALE/2} y="15" label="-R/2" />
+                                    <line x1={BASE_SCALE} y1="-3" x2={BASE_SCALE} y2="3" stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x={BASE_SCALE} y="15" label="R"/>
+                                    <line x1={BASE_SCALE / 2} y1="-3" x2={BASE_SCALE / 2} y2="3" stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x={BASE_SCALE / 2} y="15" label="R/2"/>
+                                    <line x1={-BASE_SCALE} y1="-3" x2={-BASE_SCALE} y2="3" stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x={-BASE_SCALE} y="15" label="-R"/>
+                                    <line x1={-BASE_SCALE / 2} y1="-3" x2={-BASE_SCALE / 2} y2="3" stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x={-BASE_SCALE / 2} y="15" label="-R/2"/>
 
-                                    <line x1="-3" y1={-BASE_SCALE} x2="3" y2={-BASE_SCALE} stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x="-15" y={-BASE_SCALE} label="R" />
-                                    <line x1="-3" y1={-BASE_SCALE/2} x2="3" y2={-BASE_SCALE/2} stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x="-20" y={-BASE_SCALE/2} label="R/2" />
-                                    <line x1="-3" y1={BASE_SCALE} x2="3" y2={BASE_SCALE} stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x="-15" y={BASE_SCALE} label="-R" />
-                                    <line x1="-3" y1={BASE_SCALE/2} x2="3" y2={BASE_SCALE/2} stroke={colors.axis} strokeWidth="1"/>
-                                    <AxisLabel x="-20" y={BASE_SCALE/2} label="-R/2" />
+                                    <line x1="-3" y1={-BASE_SCALE} x2="3" y2={-BASE_SCALE} stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x="-15" y={-BASE_SCALE} label="R"/>
+                                    <line x1="-3" y1={-BASE_SCALE / 2} x2="3" y2={-BASE_SCALE / 2} stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x="-20" y={-BASE_SCALE / 2} label="R/2"/>
+                                    <line x1="-3" y1={BASE_SCALE} x2="3" y2={BASE_SCALE} stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x="-15" y={BASE_SCALE} label="-R"/>
+                                    <line x1="-3" y1={BASE_SCALE / 2} x2="3" y2={BASE_SCALE / 2} stroke={colors.axis}
+                                          strokeWidth="1"/>
+                                    <AxisLabel x="-20" y={BASE_SCALE / 2} label="-R/2"/>
                                 </>
                             )}
 
@@ -491,23 +505,25 @@ const Graph = () => {
                             }).map((p, i) => {
                                 const isMe = p.user?.username === currentUsername;
 
-                                return (
-                                    <circle
-                                        key={p.id || i}
-                                        cx={(p.x / currentR) * BASE_SCALE}
-                                        cy={-(p.y / currentR) * BASE_SCALE}
-                                        r={(isMe ? 4 : 3.5) / transform.k}
+                                if ([1, 2, 3, 4].includes(currentR)) {
+                                    return (
+                                        <circle
+                                            key={p.id || i}
+                                            cx={(p.x / currentR) * BASE_SCALE}
+                                            cy={-(p.y / currentR) * BASE_SCALE}
+                                            r={(isMe ? 4 : 3.5) / transform.k}
 
-                                        fill={p.hit ? colors.pointHit : colors.pointMiss}
-                                        fillOpacity={isMe ? 1 : 0.4}
-                                        stroke={isMe ? (darkMode ? "#fff" : "#334155") : colors.bg}
-                                        strokeWidth={(isMe ? 2 : 1) / transform.k}
-                                        style={{
-                                            filter: isMe ? 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))' : 'none',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    />
-                                );
+                                            fill={p.hit ? colors.pointHit : colors.pointMiss}
+                                            fillOpacity={isMe ? 1 : 0.4}
+                                            stroke={isMe ? (darkMode ? "#fff" : "#334155") : colors.bg}
+                                            strokeWidth={(isMe ? 2 : 1) / transform.k}
+                                            style={{
+                                                filter: isMe ? 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))' : 'none',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        />
+                                    );
+                                }
                             })}
                         </g>
                     </g>
@@ -515,8 +531,15 @@ const Graph = () => {
             </Box>
 
             {isFullscreen && isMobile && (
-                <Box sx={{ p: 2, bgcolor: colors.controlBg, borderTop: `1px solid ${colors.grid}`, pb: 'calc(10px + env(safe-area-inset-bottom))', backdropFilter: 'blur(10px)' }}>
-                    <Typography variant="caption" sx={{ color: colors.text, display: 'block', mb: 1 }}>Изменить радиус:</Typography>
+                <Box sx={{
+                    p: 2,
+                    bgcolor: colors.controlBg,
+                    borderTop: `1px solid ${colors.grid}`,
+                    pb: 'calc(10px + env(safe-area-inset-bottom))',
+                    backdropFilter: 'blur(10px)'
+                }}>
+                    <Typography variant="caption" sx={{color: colors.text, display: 'block', mb: 1}}>Изменить
+                        радиус:</Typography>
                     <Slider
                         value={currentR} min={1} max={4} step={1}
                         marks

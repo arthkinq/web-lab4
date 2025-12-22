@@ -30,7 +30,6 @@ export const clearTable = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             await api.delete('/points');
-            return;
         } catch (error) {
             return rejectWithValue(error.response?.data || 'Ошибка очистки');
         }

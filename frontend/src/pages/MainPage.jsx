@@ -1,8 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigate} from 'react-router-dom';
-import {Button, Box, Typography, Paper, IconButton, Avatar, Tooltip} from '@mui/material';
-import {motion, AnimatePresence} from 'framer-motion';
+import {Button, Box, Typography, Paper, Avatar} from '@mui/material';
+import { motion } from 'framer-motion';
 
 import { fetchPoints, clearLocalPoints, socketAddPoint, socketClearPoints } from '../redux/pointsSlice';
 import {logout} from '../redux/authSlice';
@@ -13,17 +13,17 @@ import ResultsTable from '../components/ResultsTable';
 import BackgroundBlobs from '../components/BackgroundBlobs';
 
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import {toggleTheme} from '../redux/themeSlice';
+import ThemeToggle from "../components/ThemeToggle.jsx";
 
 const MainPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const username = useSelector((state) => state.auth.username);
-
+    useEffect(() => {
+        document.title = "Главная | Web Lab 4";
+    }, []);
     const darkMode = useSelector((state) => state.theme.darkMode);
     useEffect(() => {
         dispatch(fetchPoints());
@@ -89,6 +89,7 @@ const MainPage = () => {
                 transition={{duration: 0.6, ease: "easeOut"}}
                 style={{position: 'relative', zIndex: 10, paddingBottom: '40px'}}
             >
+
                 <Box sx={{p: 2, maxWidth: '1600px', margin: '0 auto'}}>
                     <Paper
                         elevation={0}
@@ -139,31 +140,7 @@ const MainPage = () => {
                                 </Typography>
                             </Box>
 
-                            <Tooltip title="Сменить тему">
-                                <IconButton
-                                    onClick={() => dispatch(toggleTheme())}
-                                    sx={{
-                                        color: theme.subText,
-                                        width: 44, height: 44,
-                                        borderRadius: '50%',
-                                        overflow: 'hidden',
-                                        '&:hover': {bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}
-                                    }}
-                                >
-                                    <AnimatePresence mode='wait' initial={false}>
-                                        <motion.div
-                                            key={darkMode ? 'dark' : 'light'}
-                                            initial={{y: -20, opacity: 0, rotate: -45}}
-                                            animate={{y: 0, opacity: 1, rotate: 0}}
-                                            exit={{y: 20, opacity: 0, rotate: 45}}
-                                            transition={{duration: 0.2}}
-                                            style={{display: 'flex'}}
-                                        >
-                                            {darkMode ? <DarkModeRoundedIcon/> : <LightModeRoundedIcon/>}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                </IconButton>
-                            </Tooltip>
+                            <ThemeToggle></ThemeToggle>
 
                             <Button
                                 variant="contained"

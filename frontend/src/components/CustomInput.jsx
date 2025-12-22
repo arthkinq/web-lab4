@@ -21,10 +21,11 @@ const CustomInput = ({
             fullWidth
             value={value}
             onChange={onChange}
-
             onKeyDown={onKeyDown}
 
-            inputRef={inputRef}
+            inputProps={{
+                ref: inputRef,
+            }}
 
             InputProps={{
                 startAdornment: icon && (
@@ -48,9 +49,14 @@ const CustomInput = ({
                     '& fieldset': { border: 'none' },
                 }
             }}
+
             InputLabelProps={{
-                sx: { color: theme.subText, '&.Mui-focused': { color: '#6366f1' } }
+                sx: {
+                    color: theme.subText,
+                    '&.Mui-focused': { color: '#6366f1' }
+                }
             }}
+
             {...props}
         />
     );
