@@ -1,16 +1,65 @@
-# React + Vite
+# WEB LAB 4
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Общие требования
+Переписать приложение из предыдущей лабораторной работы (https://github.com/arthkinq/web-lab3) с использованием следующих технологий:
 
-Currently, two official plugins are available:
+### Уровень back-end
+- Основан на **Java EE**
+- Необходимо использовать **EJB**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Уровень front-end
+- Построен на **React + Redux**
+- Использовать **ES6 и JSX**
+- Использовать набор компонентов **React Toolbox**
 
-## React Compiler
+### Взаимодействие между уровнями
+- Организовано посредством **REST API**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Требования к адаптивности
+Приложение должно поддерживать 3 режима отображения:
 
-## Expanding the ESLint configuration
+1. **Десктопный** - ширина экрана ≥ 1225px
+2. **Планшетный** - ширина экрана ≥ 827px и < 1225px
+3. **Мобильный** - ширина экрана < 827px
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Структура страниц
+
+### Стартовая страница
+**Элементы:**
+- "Шапка", содержащая:
+    - ФИО студента
+    - Номер группы
+    - Номер варианта
+- Форма для ввода логина и пароля
+
+**Требования к безопасности:**
+- Информация о пользователях хранится в отдельной таблице БД
+- Пароль хранится в виде хэш-суммы
+- Доступ неавторизованных пользователей к основной странице запрещён
+
+### Основная страница приложения
+**Элементы:**
+
+1. **Поля ввода для проверки точки:**
+    - Координата X: Кнопки `[-4, -3, -2, -1, 0, 1, 2, 3, 4]`
+    - Координата Y: Input с диапазоном от -5 до 5
+    - Радиус области: Кнопки `[-4, -3, -2, -1, 0, 1, 2, 3, 4]`
+    - *Требуется валидация вводимых данных*
+
+2. **Интерактивная картинка:**
+    - Динамически обновляемое изображение области на координатной плоскости
+    - Отображение точек, координаты которых заданы пользователем
+    - Цвет точек зависит от факта попадания/непопадания в область
+    - Функциональность:
+        - Клик по картинке определяет координаты новой точки и отправляет на сервер
+        - Смена радиуса инициирует перерисовку картинки
+
+3. **Таблица результатов:**
+    - Список результатов предыдущих проверок
+
+4. **Элементы управления:**
+    - Кнопка для закрытия сессии и возврата на стартовую страницу
+
+## Требования к работе с данными
+- Для доступа к БД необходимо использовать **JPA**
+ ![img.png](img.png)

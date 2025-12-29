@@ -121,7 +121,7 @@ const StartPage = () => {
                             <SchoolIcon fontSize="inherit" /> P3222
                         </Typography>
                         <Typography variant="caption" fontWeight={600}>
-                            Вар. 74923
+                            Вар. 74902
                         </Typography>
                     </Box>
                 </Box>
